@@ -1,6 +1,25 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import Button from '../../src/components/Button';
+
+// Mock das animações
+jest.mock('../../src/utils/animations', () => {
+  const actual = jest.requireActual('../../src/utils/animations');
+  return {
+    ...actual,
+    scalePress: jest.fn(() => ({
+      start: jest.fn(),
+    })),
+    scaleRelease: jest.fn(() => ({
+      start: jest.fn((callback) => {
+        // Executa o callback imediatamente para os testes
+        if (callback) {
+          callback();
+        }
+      }),
+    })),
+  };
+});
 
 describe('Button Component', () => {
   it('deve renderizar corretamente', () => {
@@ -12,24 +31,28 @@ describe('Button Component', () => {
     expect(getByText('Clique aqui')).toBeTruthy();
   });
 
-  it('deve chamar onPress quando pressionado', () => {
+  it('deve chamar onPress quando pressionado', async () => {
     const onPress = jest.fn();
-    const { getByText } = render(
+    const { getByLabelText } = render(
       <Button title="Clique aqui" onPress={onPress} />
     );
 
-    fireEvent.press(getByText('Clique aqui'));
+    const button = getByLabelText('Clique aqui');
+    fireEvent.press(button);
 
-    expect(onPress).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(onPress).toHaveBeenCalled();
+    });
   });
 
   it('não deve chamar onPress quando desabilitado', () => {
     const onPress = jest.fn();
-    const { getByText } = render(
+    const { getByLabelText } = render(
       <Button title="Clique aqui" onPress={onPress} disabled />
     );
 
-    fireEvent.press(getByText('Clique aqui'));
+    const button = getByLabelText('Clique aqui');
+    fireEvent.press(button);
 
     expect(onPress).not.toHaveBeenCalled();
   });

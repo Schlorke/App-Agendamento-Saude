@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import MedicationsViewModel from '../../viewmodels/MedicationsViewModel';
 import Card from '../../components/Card';
-import Loading from '../../components/Loading';
+import EmptyState from '../../components/EmptyState';
+import Skeleton from '../../components/Skeleton';
 import { theme } from '../../styles/theme';
 import type { AppScreenProps } from '../../navigation/types';
 import type { Medicamento } from '../../services/dataService';
@@ -46,19 +47,21 @@ const MedicationsScreen: React.FC<AppScreenProps<'Medications'>> = () => {
     }
   };
 
-  if (loading) {
-    return <Loading message="Carregando medicamentos..." />;
-  }
-
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        {medicamentos.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              Nenhum medicamento disponível no momento
-            </Text>
-          </View>
+        {loading ? (
+          <>
+            <Skeleton variant="card" height={120} />
+            <Skeleton variant="card" height={120} />
+            <Skeleton variant="card" height={120} />
+          </>
+        ) : medicamentos.length === 0 ? (
+          <EmptyState
+            icon="💉"
+            title="Nenhum medicamento disponível"
+            description="Não há medicamentos cadastrados no momento."
+          />
         ) : (
           medicamentos.map((medicamento) => (
             <Card key={medicamento.id} style={styles.card}>
@@ -114,16 +117,6 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     marginTop: theme.spacing.sm,
     lineHeight: 22,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: theme.spacing.xxl,
-  },
-  emptyText: {
-    ...theme.typography.body,
-    color: theme.colors.textSecondary,
   },
 });
 

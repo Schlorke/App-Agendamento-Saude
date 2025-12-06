@@ -234,14 +234,108 @@ Sistema de elevação usando sombras para criar hierarquia visual:
 ### Princípios
 
 - Animações devem ser sutis e não distrair
-- Duração padrão: 200-300ms
+- Duração padrão: 200-300ms para ações, 150ms para feedback
 - Usar easing natural (ease-in-out)
+- Sempre usar `useNativeDriver: true` quando possível para melhor performance
+- Animações devem melhorar a UX, não apenas decorar
+
+### Sistema de Animações
+
+O projeto possui um sistema centralizado de animações em `src/utils/animations.ts` com funções reutilizáveis:
+
+#### Durações Padrão
+
+- **fast**: 150ms - Para feedback imediato (press, hover)
+- **normal**: 250ms - Para transições padrão (fade, slide)
+- **slow**: 350ms - Para animações mais complexas
+
+#### Funções Disponíveis
+
+- **fadeIn**: Animação de fade in
+- **fadeOut**: Animação de fade out
+- **slideUp**: Slide de baixo para cima
+- **scalePress**: Scale para feedback de press (0.95)
+- **scaleRelease**: Volta ao normal após press
+- **pulse**: Animação de pulso para loading states
+- **shake**: Animação de shake para erros
+- **staggerFadeIn**: Entrada escalonada para listas
 
 ### Transições Comuns
 
-- Navegação entre telas: fade ou slide
-- Aparição de elementos: fade in
-- Feedback de toque: scale (0.95) ou opacity (0.7)
+#### Navegação entre Telas
+
+- Fade ou slide suave
+- Duração: 250-300ms
+- Easing: ease-in-out
+
+#### Aparição de Elementos
+
+- Fade in com slide up sutil
+- Duração: 250ms
+- Delay escalonado para listas (50ms por item)
+
+#### Feedback de Toque
+
+- Scale animation (0.95) ao pressionar
+- Duração: 150ms
+- Volta ao normal ao soltar
+
+#### Estados de Loading
+
+- Pulse animation para skeletons
+- Duração do ciclo: 1500ms
+- Opacidade varia entre 0.3 e 0.7
+
+### Exemplos de Implementação
+
+#### Animação de Entrada em Card
+
+```typescript
+import { fadeIn, slideUp } from '../utils/animations';
+
+const opacityAnim = useRef(new Animated.Value(0)).current;
+const translateYAnim = useRef(new Animated.Value(20)).current;
+
+useEffect(() => {
+  Animated.parallel([fadeIn(opacityAnim), slideUp(translateYAnim, 20)]).start();
+}, []);
+```
+
+#### Feedback de Press em Botão
+
+```typescript
+import { scalePress, scaleRelease } from '../utils/animations';
+
+const scaleAnim = useRef(new Animated.Value(1)).current;
+
+const handlePressIn = () => {
+  scalePress(scaleAnim).start();
+};
+
+const handlePressOut = () => {
+  scaleRelease(scaleAnim).start();
+};
+```
+
+#### Lista com Entrada Escalonada
+
+```typescript
+import { staggerFadeIn } from '../utils/animations';
+
+{items.map((item, index) => {
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    staggerFadeIn(index, opacityAnim).start();
+  }, []);
+
+  return (
+    <Animated.View style={{ opacity: opacityAnim }}>
+      {/* Item */}
+    </Animated.View>
+  );
+})}
+```
 
 ## 10. Responsividade
 
@@ -274,7 +368,42 @@ Sistema de elevação usando sombras para criar hierarquia visual:
 
 Embora não implementado atualmente, o design system está preparado para suportar dark mode no futuro através do tema centralizado.
 
-## 13. Guia de Uso Rápido
+## 13. Microinterações
+
+### Princípios de Microinterações
+
+Microinterações são pequenas animações que fornecem feedback ao usuário:
+
+- **Feedback Imediato**: Toda ação do usuário deve ter feedback visual
+- **Estados Visuais**: Diferencie claramente estados (default, hover, pressed, disabled)
+- **Transições Suaves**: Mudanças de estado devem ser animadas
+- **Contexto**: Animações devem comunicar significado
+
+### Microinterações Implementadas
+
+#### Microinterações - Botões
+
+- Scale animation ao pressionar (0.95)
+- Opacidade reduzida quando disabled
+- Loading state com ActivityIndicator
+
+#### Microinterações - Inputs
+
+- Animação suave de cor da borda ao focar
+- Mensagem de erro aparece com fade in
+- Label mantém posição consistente
+
+#### Microinterações - Cards
+
+- Scale animation quando clicável
+- Sombra aumenta sutilmente ao focar (se aplicável)
+
+#### Listas
+
+- Entrada escalonada (stagger) para melhor percepção
+- Animações de remoção quando item é deletado
+
+## 14. Guia de Uso Rápido
 
 ### Criando um Novo Componente
 
@@ -283,6 +412,8 @@ Embora não implementado atualmente, o design system está preparado para suport
 3. Implemente estados (default, pressed, disabled, error)
 4. Adicione labels de acessibilidade
 5. Documente no cabeçalho do arquivo usando o formato JSDoc
+6. Considere adicionar animações sutis para melhor UX
+7. Use funções do `animations.ts` quando possível
 
 ### Exemplo de Uso do Tema
 
@@ -304,7 +435,37 @@ const styles = StyleSheet.create({
 });
 ```
 
+## 15. Recursos Adicionais
+
+### Documentação Relacionada
+
+- **`docs/COMPONENT_LIBRARY.md`**: Documentação completa de todos os componentes com exemplos
+- **`docs/DESIGN_PATTERNS.md`**: Padrões de layout, navegação e UX
+- **`docs/ACCESSIBILITY_GUIDE.md`**: Guia completo de acessibilidade
+- **`docs/COMPONENT_USAGE_EXAMPLES.md`**: Exemplos práticos de uso de componentes
+- **`docs/AI_CONTEXT.md`**: Contexto específico para IAs entenderem o projeto
+
+### Componentes Disponíveis
+
+#### Componentes Base
+
+- `Button`: Botões com variantes e animações
+- `Input`: Inputs com validação e animação de foco
+- `Card`: Cards com variantes e suporte a cliques
+- `Loading`: Indicador de carregamento com animação
+
+#### Componentes Avançados
+
+- `Badge`: Status, tags e contadores
+- `EmptyState`: Estados vazios padronizados
+- `Header`: Headers consistentes para telas
+- `Modal`: Modais com animações e variantes
+- `Toast`: Notificações temporárias
+- `Skeleton`: Placeholders de loading
+
+Consulte `docs/COMPONENT_LIBRARY.md` para documentação completa de cada componente.
+
 ---
 
-**Última atualização**: 2024-01-15
-**Versão do Design System**: 1.0.0
+**Última atualização**: 2025-12-06
+**Versão do Design System**: 2.0.0

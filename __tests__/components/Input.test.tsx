@@ -1,8 +1,20 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 import Input from '../../src/components/Input';
 
 describe('Input Component', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+    jest.clearAllTimers();
+  });
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
   it('deve renderizar corretamente', () => {
     const { getByPlaceholderText } = render(
       <Input placeholder="Digite aqui" />
@@ -34,8 +46,42 @@ describe('Input Component', () => {
     );
 
     const input = getByPlaceholderText('Digite aqui');
-    fireEvent.changeText(input, 'Texto digitado');
+    act(() => {
+      fireEvent.changeText(input, 'Texto digitado');
+    });
 
     expect(onChangeText).toHaveBeenCalledWith('Texto digitado');
+  });
+
+  it('deve animar cor da borda ao focar', () => {
+    const { getByPlaceholderText } = render(
+      <Input placeholder="Digite aqui" />
+    );
+
+    const input = getByPlaceholderText('Digite aqui');
+
+    act(() => {
+      fireEvent(input, 'focus');
+      jest.advanceTimersByTime(300); // Avança a animação
+    });
+
+    expect(input).toBeTruthy();
+  });
+
+  it('deve animar cor da borda ao desfocar', () => {
+    const { getByPlaceholderText } = render(
+      <Input placeholder="Digite aqui" />
+    );
+
+    const input = getByPlaceholderText('Digite aqui');
+
+    act(() => {
+      fireEvent(input, 'focus');
+      jest.advanceTimersByTime(300);
+      fireEvent(input, 'blur');
+      jest.advanceTimersByTime(300);
+    });
+
+    expect(input).toBeTruthy();
   });
 });

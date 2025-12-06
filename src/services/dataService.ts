@@ -246,6 +246,16 @@ class DataService {
       throw new Error('Não é possível cancelar uma consulta já realizada');
     }
 
+    const dataConsulta = new Date(`${consulta.data}T${consulta.horario}:00`);
+    const agora = new Date();
+    const vinteQuatroHorasMs = 24 * 60 * 60 * 1000;
+
+    if (dataConsulta.getTime() - agora.getTime() < vinteQuatroHorasMs) {
+      throw new Error(
+        'Não é possível cancelar uma consulta com menos de 24 horas de antecedência'
+      );
+    }
+
     consulta.status = 'cancelada';
     return consulta;
   }

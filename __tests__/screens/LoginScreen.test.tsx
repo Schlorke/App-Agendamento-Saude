@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 import LoginScreen from '../../src/screens/Auth/LoginScreen';
 import { useAuth } from '../../src/hooks/useAuth';
 import type { AuthScreenProps } from '../../src/navigation/types';
@@ -16,7 +16,9 @@ describe('LoginScreen', () => {
   } as unknown as AuthScreenProps<'Login'>['navigation'];
 
   beforeEach(() => {
+    jest.useFakeTimers();
     jest.clearAllMocks();
+    jest.clearAllTimers();
     mockedUseAuth.mockReturnValue({
       login: jest.fn(),
       logout: jest.fn(),
@@ -27,6 +29,12 @@ describe('LoginScreen', () => {
     });
   });
 
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
   it('deve renderizar os campos de CPF e senha', () => {
     const { getByPlaceholderText } = render(
       <LoginScreen
@@ -35,8 +43,8 @@ describe('LoginScreen', () => {
       />
     );
 
-    expect(getByPlaceholderText(/CPF/i)).toBeTruthy();
-    expect(getByPlaceholderText(/senha/i)).toBeTruthy();
+    expect(getByPlaceholderText('000.000.000-00')).toBeTruthy();
+    expect(getByPlaceholderText('Digite sua senha')).toBeTruthy();
   });
 
   it('deve renderizar botão de login', () => {
@@ -69,13 +77,17 @@ describe('LoginScreen', () => {
       />
     );
 
-    const cpfInput = getByPlaceholderText(/CPF/i);
-    const senhaInput = getByPlaceholderText(/senha/i);
+    const cpfInput = getByPlaceholderText('000.000.000-00');
+    const senhaInput = getByPlaceholderText('Digite sua senha');
 
-    fireEvent.changeText(cpfInput, '12345678901');
-    fireEvent.changeText(senhaInput, 'senha123');
+    act(() => {
+      fireEvent.changeText(cpfInput, '11144477735');
+      fireEvent.changeText(senhaInput, 'senha123');
+      jest.advanceTimersByTime(300); // Avança animações
+    });
 
-    expect(cpfInput.props.value).toBe('12345678901');
+    // O CPF é formatado automaticamente quando tem 11 dígitos
+    expect(cpfInput.props.value).toBe('111.444.777-35');
     expect(senhaInput.props.value).toBe('senha123');
   });
 

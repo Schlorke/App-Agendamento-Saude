@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   TextInput,
@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TextInputProps,
   ViewStyle,
+  Animated,
 } from 'react-native';
 import { theme } from '../styles/theme';
 
@@ -26,29 +27,78 @@ export interface InputProps extends TextInputProps {
  *   - Todas as props de `TextInputProps` do React Native são suportadas (value, onChangeText, placeholder, etc.).
  *
  * @state
- *   - Nenhum estado interno. Componente controlado via props.
+ *   - `focused`: {boolean} - Indica se o input está focado.
+ *   - `borderColorAnim`: {Animated.Value} - Valor animado para a cor da borda.
  *
  * @known_issues
  *   - Nenhum problema conhecido.
  *
  * @changelog
  *   - 2024-01-15 - IA - Adicionado bloco de documentação JSDoc completo.
+ *   - 2025-12-06 - IA - Adicionada animação de foco com transição suave da cor da borda.
  */
 const Input: React.FC<InputProps> = ({
   label,
   error,
   containerStyle,
   style,
+  onFocus,
+  onBlur,
   ...props
 }) => {
+  const [focused, setFocused] = useState(false);
+  const borderColorAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(borderColorAnim, {
+      toValue: focused && !error ? 1 : 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  }, [focused, error, borderColorAnim]);
+
+  const borderColor = borderColorAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [
+      error ? theme.colors.error : theme.colors.border,
+      theme.colors.primary,
+    ],
+  });
+
+  const handleFocus = (
+    e: Parameters<NonNullable<TextInputProps['onFocus']>>[0]
+  ) => {
+    setFocused(true);
+    onFocus?.(e);
+  };
+
+  const handleBlur = (
+    e: Parameters<NonNullable<TextInputProps['onBlur']>>[0]
+  ) => {
+    setFocused(false);
+    onBlur?.(e);
+  };
+
   return (
     <View style={[styles.container, containerStyle]}>
       {label && <Text style={styles.label}>{label}</Text>}
-      <TextInput
-        style={[styles.input, error && styles.inputError, style]}
-        placeholderTextColor={theme.colors.textSecondary}
-        {...props}
-      />
+      <Animated.View
+        style={[
+          styles.inputContainer,
+          {
+            borderColor,
+          },
+          error && styles.inputErrorContainer,
+        ]}
+      >
+        <TextInput
+          style={[styles.input, style]}
+          placeholderTextColor={theme.colors.textSecondary}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          {...props}
+        />
+      </Animated.View>
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
@@ -64,18 +114,20 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xs,
     fontWeight: '600',
   },
+  inputContainer: {
+    borderWidth: 1,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.surface,
+  },
+  inputErrorContainer: {
+    borderColor: theme.colors.error,
+  },
   input: {
     ...theme.typography.body,
     height: 50,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.borderRadius.md,
     paddingHorizontal: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'transparent',
     color: theme.colors.text,
-  },
-  inputError: {
-    borderColor: theme.colors.error,
   },
   errorText: {
     ...theme.typography.caption,

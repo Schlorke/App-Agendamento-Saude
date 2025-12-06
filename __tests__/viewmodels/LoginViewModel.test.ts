@@ -1,14 +1,14 @@
 import LoginViewModel from '../../src/viewmodels/LoginViewModel';
 import dataService from '../../src/services/dataService';
-import { hashPassword } from '../../src/utils/hash';
+import { compareHash } from '../../src/utils/hash';
 
 // Mock do dataService
 jest.mock('../../src/services/dataService');
 jest.mock('../../src/utils/hash');
 
 const mockedDataService = dataService as jest.Mocked<typeof dataService>;
-const mockedHashPassword = hashPassword as jest.MockedFunction<
-  typeof hashPassword
+const mockedCompareHash = compareHash as jest.MockedFunction<
+  typeof compareHash
 >;
 
 describe('LoginViewModel', () => {
@@ -27,7 +27,7 @@ describe('LoginViewModel', () => {
 
     it('deve retornar erro quando senha está vazia', async () => {
       const viewModel = new LoginViewModel();
-      const resultado = await viewModel.login('12345678901', '');
+      const resultado = await viewModel.login('11144477735', '');
 
       expect(resultado.success).toBe(false);
       expect(resultado.error).toContain('Senha é obrigatória');
@@ -39,7 +39,7 @@ describe('LoginViewModel', () => {
       mockedDataService.buscarUsuarioPorCPF.mockResolvedValue(null);
 
       const viewModel = new LoginViewModel();
-      const resultado = await viewModel.login('12345678901', 'senha123');
+      const resultado = await viewModel.login('11144477735', 'senha123');
 
       expect(resultado.success).toBe(false);
       expect(resultado.error).toContain('CPF ou senha incorretos');
@@ -49,16 +49,16 @@ describe('LoginViewModel', () => {
       const usuarioMock = {
         id: '1',
         nome: 'Teste',
-        cpf: '12345678901',
+        cpf: '11144477735',
         dataNascimento: '1990-01-01',
         senhaHash: 'hash_correto',
       };
 
       mockedDataService.buscarUsuarioPorCPF.mockResolvedValue(usuarioMock);
-      mockedHashPassword.mockReturnValue('hash_incorreto');
+      mockedCompareHash.mockReturnValue(false);
 
       const viewModel = new LoginViewModel();
-      const resultado = await viewModel.login('12345678901', 'senhaErrada');
+      const resultado = await viewModel.login('11144477735', 'senhaErrada');
 
       expect(resultado.success).toBe(false);
       expect(resultado.error).toContain('CPF ou senha incorretos');
@@ -68,16 +68,16 @@ describe('LoginViewModel', () => {
       const usuarioMock = {
         id: '1',
         nome: 'Teste',
-        cpf: '12345678901',
+        cpf: '11144477735',
         dataNascimento: '1990-01-01',
         senhaHash: 'hash_correto',
       };
 
       mockedDataService.buscarUsuarioPorCPF.mockResolvedValue(usuarioMock);
-      mockedHashPassword.mockReturnValue('hash_correto');
+      mockedCompareHash.mockReturnValue(true);
 
       const viewModel = new LoginViewModel();
-      const resultado = await viewModel.login('12345678901', 'senha123');
+      const resultado = await viewModel.login('11144477735', 'senha123');
 
       expect(resultado.success).toBe(true);
       expect(resultado.usuario).toEqual(usuarioMock);
@@ -97,7 +97,7 @@ describe('LoginViewModel', () => {
       );
 
       const viewModel = new LoginViewModel();
-      const loginPromise = viewModel.login('12345678901', 'senha123');
+      const loginPromise = viewModel.login('11144477735', 'senha123');
 
       // Durante a execução, loading deve ser true
       // Como é assíncrono, não podemos verificar diretamente, mas testamos que não trava

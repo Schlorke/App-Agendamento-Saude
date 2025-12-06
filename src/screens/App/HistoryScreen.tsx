@@ -5,16 +5,20 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
 import dataService from '../../services/dataService';
 import CancelAppointmentViewModel from '../../viewmodels/CancelAppointmentViewModel';
 import Button from '../../components/Button';
+import Card from '../../components/Card';
+import Badge from '../../components/Badge';
+import EmptyState from '../../components/EmptyState';
+import Skeleton from '../../components/Skeleton';
 import { theme } from '../../styles/theme';
 import type { AppScreenProps } from '../../navigation/types';
-import type { Consulta } from '../../services/dataService';
+import type { Consulta, Profissional } from '../../services/dataService';
+import db from '../../data/db.json';
 
 /**
  * @component HistoryScreen
@@ -34,6 +38,7 @@ import type { Consulta } from '../../services/dataService';
  *
  * @changelog
  *   - 2024-01-15 - IA - Adicionado bloco de documentação JSDoc completo.
+ *   - 2025-12-06 - IA - Adicionadas labels e hints de acessibilidade nos filtros de histórico.
  */
 const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
   const { usuario } = useAuth();
@@ -45,6 +50,15 @@ const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
   const [cancelandoId, setCancelandoId] = useState<string | null>(null);
 
   const cancelViewModel = new CancelAppointmentViewModel();
+
+  // Mapa de profissionais para buscar nomes por ID
+  const profissionaisMap = React.useMemo(() => {
+    const map = new Map<string, string>();
+    (db as { profissionais: Profissional[] }).profissionais.forEach((p) => {
+      map.set(p.id, p.nome);
+    });
+    return map;
+  }, []);
 
   useEffect(() => {
     carregarConsultas();
@@ -86,16 +100,18 @@ const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
     return date.toLocaleDateString('pt-BR');
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusVariant = (
+    status: string
+  ): 'primary' | 'success' | 'error' | 'neutral' => {
     switch (status) {
       case 'agendada':
-        return theme.colors.primary;
+        return 'primary';
       case 'realizada':
-        return theme.colors.success;
+        return 'success';
       case 'cancelada':
-        return theme.colors.error;
+        return 'error';
       default:
-        return theme.colors.textSecondary;
+        return 'neutral';
     }
   };
 
@@ -154,8 +170,20 @@ const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+      <View style={styles.container}>
+        <View style={styles.filterContainer}>
+          <Skeleton variant="text" width="30%" height={40} />
+          <Skeleton variant="text" width="30%" height={40} />
+          <Skeleton variant="text" width="30%" height={40} />
+        </View>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.content}
+        >
+          <Skeleton variant="listItem" />
+          <Skeleton variant="listItem" />
+          <Skeleton variant="listItem" />
+        </ScrollView>
       </View>
     );
   }
@@ -169,6 +197,9 @@ const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
             filtro === 'todas' && styles.filterButtonActive,
           ]}
           onPress={() => setFiltro('todas')}
+          accessibilityRole="button"
+          accessibilityLabel="Mostrar todas as consultas"
+          accessibilityHint="Exibe consultas agendadas, realizadas e canceladas"
         >
           <Text
             style={[
@@ -185,6 +216,9 @@ const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
             filtro === 'agendadas' && styles.filterButtonActive,
           ]}
           onPress={() => setFiltro('agendadas')}
+          accessibilityRole="button"
+          accessibilityLabel="Mostrar consultas agendadas"
+          accessibilityHint="Filtra apenas consultas com status agendada"
         >
           <Text
             style={[
@@ -201,6 +235,9 @@ const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
             filtro === 'realizadas' && styles.filterButtonActive,
           ]}
           onPress={() => setFiltro('realizadas')}
+          accessibilityRole="button"
+          accessibilityLabel="Mostrar consultas realizadas"
+          accessibilityHint="Filtra apenas consultas já realizadas"
         >
           <Text
             style={[
@@ -218,26 +255,34 @@ const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
         contentContainerStyle={styles.content}
       >
         {consultasFiltradas.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Nenhuma consulta encontrada</Text>
-          </View>
+          <EmptyState
+            icon="📋"
+            title="Nenhuma consulta encontrada"
+            description={
+              filtro === 'todas'
+                ? 'Você ainda não possui consultas registradas.'
+                : `Não há consultas ${filtro === 'agendadas' ? 'agendadas' : filtro === 'realizadas' ? 'realizadas' : 'canceladas'}.`
+            }
+          />
         ) : (
           consultasFiltradas.map((consulta) => (
-            <View key={consulta.id} style={styles.consultaCard}>
+            <Card key={consulta.id} style={styles.consultaCard}>
               <View style={styles.consultaHeader}>
-                <Text style={styles.consultaData}>
-                  {formatarData(consulta.data)} às {consulta.horario}
-                </Text>
-                <View
-                  style={[
-                    styles.statusBadge,
-                    { backgroundColor: getStatusColor(consulta.status) },
-                  ]}
-                >
-                  <Text style={styles.statusText}>
-                    {getStatusText(consulta.status)}
+                <View style={styles.consultaInfo}>
+                  <Text style={styles.consultaData}>
+                    {formatarData(consulta.data)} às {consulta.horario}
                   </Text>
+                  {profissionaisMap.get(consulta.profissionalId) && (
+                    <Text style={styles.consultaProfissional}>
+                      {profissionaisMap.get(consulta.profissionalId)}
+                    </Text>
+                  )}
                 </View>
+                <Badge
+                  text={getStatusText(consulta.status)}
+                  variant={getStatusVariant(consulta.status)}
+                  size="small"
+                />
               </View>
               {consulta.status === 'agendada' && (
                 <View style={styles.actionsContainer}>
@@ -254,7 +299,7 @@ const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
                   />
                 </View>
               )}
-            </View>
+            </Card>
           ))
         )}
       </ScrollView>
@@ -305,39 +350,26 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
   },
   consultaCard: {
-    backgroundColor: theme.colors.surface,
-    padding: theme.spacing.lg,
-    borderRadius: theme.borderRadius.lg,
-    ...theme.shadow.small,
+    marginBottom: theme.spacing.md,
   },
   consultaHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    marginBottom: theme.spacing.sm,
+  },
+  consultaInfo: {
+    flex: 1,
+    marginRight: theme.spacing.md,
   },
   consultaData: {
     ...theme.typography.body,
     color: theme.colors.text,
     fontWeight: '600',
+    marginBottom: theme.spacing.xs,
   },
-  statusBadge: {
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.borderRadius.sm,
-  },
-  statusText: {
-    ...theme.typography.caption,
-    color: theme.colors.textLight,
-    fontWeight: '600',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: theme.spacing.xxl,
-  },
-  emptyText: {
-    ...theme.typography.body,
+  consultaProfissional: {
+    ...theme.typography.bodySmall,
     color: theme.colors.textSecondary,
   },
   actionsContainer: {
@@ -345,6 +377,7 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     borderColor: theme.colors.error,
+    marginTop: theme.spacing.md,
   },
 });
 

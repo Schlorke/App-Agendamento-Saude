@@ -10,8 +10,8 @@ import {
 describe('validation utilities', () => {
   describe('validateCPF', () => {
     it('deve retornar true para CPF válido', () => {
-      expect(validateCPF('12345678901')).toBe(true);
-      expect(validateCPF('123.456.789-01')).toBe(true);
+      expect(validateCPF('11144477735')).toBe(true);
+      expect(validateCPF('111.444.777-35')).toBe(true);
     });
 
     it('deve retornar false para CPF inválido', () => {
@@ -28,7 +28,7 @@ describe('validation utilities', () => {
 
   describe('formatCPF', () => {
     it('deve formatar CPF corretamente', () => {
-      expect(formatCPF('12345678901')).toBe('123.456.789-01');
+      expect(formatCPF('11144477735')).toBe('111.444.777-35');
     });
 
     it('deve retornar CPF sem formatação se não tiver 11 dígitos', () => {

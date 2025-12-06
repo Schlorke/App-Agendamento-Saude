@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   TouchableOpacity,
   Text,
@@ -6,8 +6,11 @@ import {
   ActivityIndicator,
   ViewStyle,
   TextStyle,
+  AccessibilityRole,
+  Animated,
 } from 'react-native';
 import { theme } from '../styles/theme';
+import { scalePress, scaleRelease } from '../utils/animations';
 
 export interface ButtonProps {
   title: string;
@@ -18,6 +21,9 @@ export interface ButtonProps {
   style?: ViewStyle;
   textStyle?: TextStyle;
   fullWidth?: boolean;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
+  accessibilityRole?: AccessibilityRole;
 }
 
 /**
@@ -42,6 +48,8 @@ export interface ButtonProps {
  *
  * @changelog
  *   - 2024-01-15 - IA - Adicionado bloco de documentação JSDoc completo.
+ *   - 2025-12-06 - IA - Adicionadas props de acessibilidade com labels e roles padrão.
+ *   - 2025-12-06 - IA - Adicionada animação de scale ao pressionar para melhor feedback visual.
  */
 const Button: React.FC<ButtonProps> = ({
   title,
@@ -52,7 +60,12 @@ const Button: React.FC<ButtonProps> = ({
   style,
   textStyle,
   fullWidth = false,
+  accessibilityLabel,
+  accessibilityHint,
+  accessibilityRole = 'button',
 }) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
   const getButtonStyle = () => {
     switch (variant) {
       case 'secondary':
@@ -73,31 +86,65 @@ const Button: React.FC<ButtonProps> = ({
     }
   };
 
+  const handlePressIn = () => {
+    if (!disabled && !loading) {
+      scalePress(scaleAnim).start();
+    }
+  };
+
+  const handlePressOut = () => {
+    if (!disabled && !loading) {
+      scaleRelease(scaleAnim).start();
+    }
+  };
+
+  const handlePress = () => {
+    if (!disabled && !loading) {
+      scaleRelease(scaleAnim).start(() => {
+        onPress();
+      });
+    }
+  };
+
   return (
-    <TouchableOpacity
+    <Animated.View
       style={[
-        styles.button,
-        getButtonStyle(),
-        disabled && styles.buttonDisabled,
+        {
+          transform: [{ scale: scaleAnim }],
+        },
         fullWidth && styles.fullWidth,
-        style,
       ]}
-      onPress={onPress}
-      disabled={disabled || loading}
-      activeOpacity={0.7}
     >
-      {loading ? (
-        <ActivityIndicator
-          color={
-            variant === 'outline'
-              ? theme.colors.primary
-              : theme.colors.textLight
-          }
-        />
-      ) : (
-        <Text style={[getTextStyle(), textStyle]}>{title}</Text>
-      )}
-    </TouchableOpacity>
+      <TouchableOpacity
+        style={[
+          styles.button,
+          getButtonStyle(),
+          disabled && styles.buttonDisabled,
+          fullWidth && styles.fullWidth,
+          style,
+        ]}
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled || loading}
+        activeOpacity={1}
+        accessibilityRole={accessibilityRole}
+        accessibilityLabel={accessibilityLabel || title}
+        accessibilityHint={accessibilityHint}
+      >
+        {loading ? (
+          <ActivityIndicator
+            color={
+              variant === 'outline'
+                ? theme.colors.primary
+                : theme.colors.textLight
+            }
+          />
+        ) : (
+          <Text style={[getTextStyle(), textStyle]}>{title}</Text>
+        )}
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 

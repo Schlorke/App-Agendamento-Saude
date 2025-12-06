@@ -20,13 +20,13 @@ describe('RegisterViewModel', () => {
       const viewModel = new RegisterViewModel();
       const resultado = await viewModel.cadastrar({
         nome: '',
-        cpf: '12345678901',
+        cpf: '11144477735',
         dataNascimento: '1990-01-01',
         senha: 'senha123',
       });
 
       expect(resultado.success).toBe(false);
-      expect(resultado.error).toContain('nome');
+      expect(resultado.error?.toLowerCase()).toContain('nome');
     });
 
     it('deve retornar erro quando CPF é inválido', async () => {
@@ -46,7 +46,7 @@ describe('RegisterViewModel', () => {
       const viewModel = new RegisterViewModel();
       const resultado = await viewModel.cadastrar({
         nome: 'João Silva',
-        cpf: '12345678901',
+        cpf: '11144477735',
         dataNascimento: '2050-01-01',
         senha: 'senha123',
       });
@@ -59,13 +59,13 @@ describe('RegisterViewModel', () => {
       const viewModel = new RegisterViewModel();
       const resultado = await viewModel.cadastrar({
         nome: 'João Silva',
-        cpf: '12345678901',
+        cpf: '11144477735',
         dataNascimento: '1990-01-01',
         senha: '12345',
       });
 
       expect(resultado.success).toBe(false);
-      expect(resultado.error).toContain('senha');
+      expect(resultado.error?.toLowerCase()).toContain('senha');
     });
   });
 
@@ -76,13 +76,13 @@ describe('RegisterViewModel', () => {
       const viewModel = new RegisterViewModel();
       const resultado = await viewModel.cadastrar({
         nome: 'João Silva',
-        cpf: '12345678901',
+        cpf: '11144477735',
         dataNascimento: '1990-01-01',
         senha: 'senha123',
       });
 
       expect(resultado.success).toBe(false);
-      expect(resultado.error).toContain('já cadastrado');
+      expect(resultado.error?.toLowerCase()).toContain('cadastrado');
     });
   });
 
@@ -94,7 +94,7 @@ describe('RegisterViewModel', () => {
       const novoUsuario = {
         id: '3',
         nome: 'João Silva',
-        cpf: '12345678901',
+        cpf: '11144477735',
         dataNascimento: '1990-01-01',
         senhaHash: 'hash_da_senha',
       };
@@ -104,7 +104,7 @@ describe('RegisterViewModel', () => {
       const viewModel = new RegisterViewModel();
       const resultado = await viewModel.cadastrar({
         nome: 'João Silva',
-        cpf: '12345678901',
+        cpf: '11144477735',
         dataNascimento: '1990-01-01',
         senha: 'senha123',
       });

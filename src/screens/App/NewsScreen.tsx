@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import NewsViewModel from '../../viewmodels/NewsViewModel';
 import Card from '../../components/Card';
-import Loading from '../../components/Loading';
+import EmptyState from '../../components/EmptyState';
+import Skeleton from '../../components/Skeleton';
 import { theme } from '../../styles/theme';
 import type { AppScreenProps } from '../../navigation/types';
 import type { Noticia } from '../../services/dataService';
@@ -55,19 +56,21 @@ const NewsScreen: React.FC<AppScreenProps<'News'>> = () => {
     });
   };
 
-  if (loading) {
-    return <Loading message="Carregando notícias..." />;
-  }
-
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        {noticias.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              Nenhuma notícia disponível no momento
-            </Text>
-          </View>
+        {loading ? (
+          <>
+            <Skeleton variant="card" height={150} />
+            <Skeleton variant="card" height={150} />
+            <Skeleton variant="card" height={150} />
+          </>
+        ) : noticias.length === 0 ? (
+          <EmptyState
+            icon="📰"
+            title="Nenhuma notícia disponível"
+            description="Não há notícias ou campanhas disponíveis no momento."
+          />
         ) : (
           noticias.map((noticia) => (
             <Card key={noticia.id} style={styles.card}>
@@ -109,16 +112,6 @@ const styles = StyleSheet.create({
     ...theme.typography.body,
     color: theme.colors.text,
     lineHeight: 22,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: theme.spacing.xxl,
-  },
-  emptyText: {
-    ...theme.typography.body,
-    color: theme.colors.textSecondary,
   },
 });
 

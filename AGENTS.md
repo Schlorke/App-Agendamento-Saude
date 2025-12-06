@@ -159,7 +159,67 @@ import type { AppScreenProps } from '../../navigation/types';
 - Log erros em desenvolvimento, mas não exponha detalhes técnicos ao usuário final
 - Use try/catch em operações assíncronas
 
-## 7. Atualização de Documentação
+## 7. Design System e Identidade Visual
+
+### Uso do Tema
+
+**SEMPRE** use o tema centralizado (`src/styles/theme.ts`) para cores, espaçamento e tipografia:
+
+```typescript
+// ✅ CORRETO
+import { theme } from '../styles/theme';
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: theme.colors.background,
+    padding: theme.spacing.lg,
+    ...theme.typography.body,
+  },
+});
+
+// ❌ ERRADO - valores hardcoded
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#F5F5F5',
+    padding: 24,
+    fontSize: 16,
+  },
+});
+```
+
+### Componentes do Design System
+
+Use sempre os componentes do design system quando possível:
+
+- `Button`: Botões com variantes (primary, secondary, outline)
+- `Input`: Inputs com label, erro e animação de foco
+- `Card`: Cards com variantes (elevated, outlined, flat)
+- `Badge`: Status, tags, contadores
+- `EmptyState`: Estados vazios
+- `Modal`: Modais de confirmação/alerta
+- `Toast`: Notificações temporárias
+- `Skeleton`: Placeholders de loading
+
+**NUNCA** recrie componentes que já existem. Customize via props.
+
+### Animações
+
+- Use funções do `src/utils/animations.ts` quando possível
+- Animações devem ser sutis (200-300ms)
+- Sempre use `useNativeDriver: true` quando possível
+- Forneça feedback visual em todas as ações do usuário
+
+### Documentação de Design
+
+Consulte sempre:
+
+- `docs/DESIGN_SYSTEM.md`: Guia completo do design system
+- `docs/COMPONENT_LIBRARY.md`: Documentação de componentes
+- `docs/DESIGN_PATTERNS.md`: Padrões de layout e UX
+- `docs/ACCESSIBILITY_GUIDE.md`: Guia de acessibilidade
+- `docs/AI_CONTEXT.md`: Contexto específico para IAs
+
+## 8. Atualização de Documentação
 
 Sempre que você fizer uma alteração:
 
@@ -167,8 +227,35 @@ Sempre que você fizer uma alteração:
 2. Atualize o `CHANGELOG.md` na seção `[Unreleased]`
 3. Se a alteração afetar a arquitetura, atualize `ARCHITECTURE.md`
 4. Se a alteração afetar o design, atualize `DESIGN_SYSTEM.md`
+5. Se encontrar um bug conhecido, consulte `docs/KNOWN_ISSUES.md` antes de investigar
+6. Se criar novo componente, adicione exemplo em `docs/COMPONENT_USAGE_EXAMPLES.md`
 
-## 8. Testes
+## 9. Sistema de Contexto para IA
+
+### Arquivos de Contexto
+
+Este projeto possui um sistema completo de documentação para fornecer contexto às IAs:
+
+- **`docs/AI_CONTEXT.md`**: Guia específico para IAs entenderem o projeto
+- **`docs/KNOWN_ISSUES.md`**: Erros conhecidos, limitações e workarounds
+- **`docs/DESIGN_DECISIONS.md`**: Decisões de design e justificativas
+- **`docs/COMPONENT_USAGE_EXAMPLES.md`**: Exemplos práticos de uso
+
+### Antes de Implementar
+
+1. **Consulte `docs/KNOWN_ISSUES.md`**: Verifique se o problema já é conhecido
+2. **Consulte `docs/AI_CONTEXT.md`**: Entenda o contexto do projeto
+3. **Consulte `docs/DESIGN_DECISIONS.md`**: Entenda por que certas escolhas foram feitas
+4. **Use exemplos**: Consulte `docs/COMPONENT_USAGE_EXAMPLES.md` para padrões
+
+### Evitando Alucinações
+
+- **Sempre use o tema**: Não invente cores ou espaçamentos
+- **Use componentes existentes**: Não recrie componentes que já existem
+- **Siga padrões**: Consulte `docs/DESIGN_PATTERNS.md` para padrões comuns
+- **Mantenha identidade visual**: Verde saúde (#2E7D32) é a cor primária
+
+## 10. Testes
 
 Ao criar ou modificar código:
 
@@ -177,7 +264,7 @@ Ao criar ou modificar código:
 - Teste edge cases
 - Mantenha cobertura de testes acima de 80% para lógica de negócio
 
-## 9. Checklist Antes de Finalizar
+## 11. Checklist Antes de Finalizar
 
 Antes de considerar uma tarefa completa, verifique:
 
@@ -188,8 +275,54 @@ Antes de considerar uma tarefa completa, verifique:
 - [ ] CHANGELOG.md foi atualizado
 - [ ] Código foi revisado para performance
 - [ ] Não há console.logs ou código de debug deixado
+- [ ] Usa tema para cores, espaçamento e tipografia
+- [ ] Usa componentes do design system quando possível
+- [ ] Animações são sutis e usam native driver
+- [ ] Consultei `docs/KNOWN_ISSUES.md` antes de investigar problemas
+
+## 12. Referências Rápidas
+
+### Arquivos de Documentação
+
+- **`AGENTS.md`** (este arquivo): Protocolo completo para agentes de IA
+- **`docs/ARCHITECTURE.md`**: Arquitetura MVVM do projeto
+- **`docs/DESIGN_SYSTEM.md`**: Design system completo
+- **`docs/COMPONENT_LIBRARY.md`**: Biblioteca de componentes
+- **`docs/DESIGN_PATTERNS.md`**: Padrões de design e UX
+- **`docs/ACCESSIBILITY_GUIDE.md`**: Guia de acessibilidade
+- **`docs/KNOWN_ISSUES.md`**: Erros conhecidos e limitações
+- **`docs/DESIGN_DECISIONS.md`**: Decisões de design
+- **`docs/COMPONENT_USAGE_EXAMPLES.md`**: Exemplos práticos
+- **`docs/AI_CONTEXT.md`**: Contexto específico para IAs
+
+### Estrutura de Arquivos Importantes
+
+```
+/
+├── AGENTS.md                          # Protocolo para IAs (LEIA PRIMEIRO)
+├── CHANGELOG.md                       # Histórico de mudanças
+├── docs/
+│   ├── ARCHITECTURE.md                # Arquitetura MVVM
+│   ├── DESIGN_SYSTEM.md               # Design system
+│   ├── COMPONENT_LIBRARY.md           # Biblioteca de componentes
+│   ├── DESIGN_PATTERNS.md             # Padrões de design
+│   ├── ACCESSIBILITY_GUIDE.md         # Acessibilidade
+│   ├── KNOWN_ISSUES.md                # Erros conhecidos
+│   ├── DESIGN_DECISIONS.md            # Decisões de design
+│   ├── COMPONENT_USAGE_EXAMPLES.md    # Exemplos práticos
+│   └── AI_CONTEXT.md                  # Contexto para IAs
+└── src/
+    ├── components/                     # Componentes reutilizáveis
+    ├── screens/                       # Telas (Views)
+    ├── viewmodels/                    # ViewModels
+    ├── services/                      # Services
+    ├── styles/
+    │   └── theme.ts                   # Tema centralizado
+    └── utils/
+        └── animations.ts              # Sistema de animações
+```
 
 ---
 
-**Última atualização**: 2024-01-15
-**Versão do Protocolo**: 1.0.0
+**Última atualização**: 2025-12-06
+**Versão do Protocolo**: 2.0.0

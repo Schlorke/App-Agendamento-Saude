@@ -1,6 +1,7 @@
-import React from 'react';
-import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, ActivityIndicator, StyleSheet, Animated } from 'react-native';
 import { theme } from '../styles/theme';
+import { pulse } from '../utils/animations';
 
 export interface LoadingProps {
   message?: string;
@@ -23,15 +24,33 @@ export interface LoadingProps {
  *
  * @changelog
  *   - 2024-01-15 - IA - Adicionado bloco de documentação JSDoc completo.
+ *   - 2025-12-06 - IA - Adicionada animação de pulso sutil no texto da mensagem.
  */
 const Loading: React.FC<LoadingProps> = ({
   message = 'Carregando...',
   size = 'large',
 }) => {
+  const opacityAnim = useRef(new Animated.Value(0.5)).current;
+
+  useEffect(() => {
+    pulse(opacityAnim, 0.5, 1, 1500).start();
+  }, [opacityAnim]);
+
   return (
     <View style={styles.container}>
       <ActivityIndicator size={size} color={theme.colors.primary} />
-      {message && <Text style={styles.message}>{message}</Text>}
+      {message && (
+        <Animated.Text
+          style={[
+            styles.message,
+            {
+              opacity: opacityAnim,
+            },
+          ]}
+        >
+          {message}
+        </Animated.Text>
+      )}
     </View>
   );
 };
