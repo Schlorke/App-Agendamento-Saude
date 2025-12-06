@@ -7,6 +7,8 @@ import {
   Alert,
   TouchableOpacity,
   ActivityIndicator,
+  FlatList,
+  Platform,
 } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
 import ScheduleViewModel from '../../viewmodels/ScheduleViewModel';
@@ -43,6 +45,7 @@ import type { Especialidade, Profissional } from '../../services/dataService';
  *
  * @changelog
  *   - 2024-01-15 - IA - Adicionado bloco de documentação JSDoc completo.
+ *   - 2025-12-06 - IA - Corrigido display do dropdown: substituído map por FlatList para melhor performance, adicionado overflow hidden, sombras/elevation para z-index adequado, removida borda do último item da lista, e melhorada acessibilidade com labels apropriados.
  */
 const ScheduleScreen: React.FC<AppScreenProps<'Schedule'>> = ({
   navigation,
@@ -207,20 +210,28 @@ const ScheduleScreen: React.FC<AppScreenProps<'Schedule'>> = ({
           </TouchableOpacity>
           {mostrarPickerEspecialidade && (
             <View style={styles.pickerContainer}>
-              {especialidades.map((especialidade) => (
-                <TouchableOpacity
-                  key={especialidade.id}
-                  style={styles.pickerOption}
-                  onPress={() => {
-                    setEspecialidadeSelecionada(especialidade.id);
-                    setMostrarPickerEspecialidade(false);
-                  }}
-                >
-                  <Text style={styles.pickerOptionText}>
-                    {especialidade.nome}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              <FlatList
+                data={especialidades}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item, index }) => (
+                  <TouchableOpacity
+                    style={[
+                      styles.pickerOption,
+                      index === especialidades.length - 1 &&
+                        styles.pickerOptionLast,
+                    ]}
+                    onPress={() => {
+                      setEspecialidadeSelecionada(item.id);
+                      setMostrarPickerEspecialidade(false);
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Selecionar especialidade ${item.nome}`}
+                  >
+                    <Text style={styles.pickerOptionText}>{item.nome}</Text>
+                  </TouchableOpacity>
+                )}
+                nestedScrollEnabled
+              />
             </View>
           )}
         </Card>
@@ -250,23 +261,31 @@ const ScheduleScreen: React.FC<AppScreenProps<'Schedule'>> = ({
             </TouchableOpacity>
             {mostrarPickerProfissional && profissionais.length > 0 && (
               <View style={styles.pickerContainer}>
-                {profissionais.map((profissional) => (
-                  <TouchableOpacity
-                    key={profissional.id}
-                    style={styles.pickerOption}
-                    onPress={() => {
-                      setProfissionalSelecionado(profissional.id);
-                      setMostrarPickerProfissional(false);
-                    }}
-                  >
-                    <Text style={styles.pickerOptionText}>
-                      {profissional.nome}
-                    </Text>
-                    <Text style={styles.pickerOptionSubtext}>
-                      CRM: {profissional.crm}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                <FlatList
+                  data={profissionais}
+                  keyExtractor={(item) => item.id}
+                  renderItem={({ item, index }) => (
+                    <TouchableOpacity
+                      style={[
+                        styles.pickerOption,
+                        index === profissionais.length - 1 &&
+                          styles.pickerOptionLast,
+                      ]}
+                      onPress={() => {
+                        setProfissionalSelecionado(item.id);
+                        setMostrarPickerProfissional(false);
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Selecionar profissional ${item.nome}`}
+                    >
+                      <Text style={styles.pickerOptionText}>{item.nome}</Text>
+                      <Text style={styles.pickerOptionSubtext}>
+                        CRM: {item.crm}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                  nestedScrollEnabled
+                />
               </View>
             )}
           </Card>
@@ -303,18 +322,28 @@ const ScheduleScreen: React.FC<AppScreenProps<'Schedule'>> = ({
                 </TouchableOpacity>
                 {mostrarPickerHorario && (
                   <View style={styles.pickerContainer}>
-                    {horarios.map((horario) => (
-                      <TouchableOpacity
-                        key={horario}
-                        style={styles.pickerOption}
-                        onPress={() => {
-                          setHorarioSelecionado(horario);
-                          setMostrarPickerHorario(false);
-                        }}
-                      >
-                        <Text style={styles.pickerOptionText}>{horario}</Text>
-                      </TouchableOpacity>
-                    ))}
+                    <FlatList
+                      data={horarios}
+                      keyExtractor={(item) => item}
+                      renderItem={({ item, index }) => (
+                        <TouchableOpacity
+                          style={[
+                            styles.pickerOption,
+                            index === horarios.length - 1 &&
+                              styles.pickerOptionLast,
+                          ]}
+                          onPress={() => {
+                            setHorarioSelecionado(item);
+                            setMostrarPickerHorario(false);
+                          }}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Selecionar horário ${item}`}
+                        >
+                          <Text style={styles.pickerOptionText}>{item}</Text>
+                        </TouchableOpacity>
+                      )}
+                      nestedScrollEnabled
+                    />
                   </View>
                 )}
               </Card>
@@ -378,11 +407,29 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.md,
     backgroundColor: theme.colors.surface,
     maxHeight: 200,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+      },
+      android: {
+        elevation: 5,
+      },
+      web: {
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)',
+      },
+    }),
   },
   pickerOption: {
     padding: theme.spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
+  },
+  pickerOptionLast: {
+    borderBottomWidth: 0,
   },
   pickerOptionText: {
     ...theme.typography.body,

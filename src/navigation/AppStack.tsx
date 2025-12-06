@@ -35,9 +35,10 @@ const TabNavigator = () => {
         },
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textSecondary,
+        tabBarActiveBackgroundColor: theme.colors.tabActiveBackground,
         tabBarStyle: {
-          paddingBottom: 5,
-          paddingTop: 5,
+          paddingBottom: 0,
+          paddingTop: 0,
           height: 60,
         },
       }}
@@ -105,6 +106,7 @@ const TabNavigator = () => {
  *   - Header habilitado com estilo verde primário.
  *   - Tab bar customizada com cores do tema.
  *   - Altura da tab bar: 60px.
+ *   - Botões de tab com background slate gray quando ativos para melhor orientação do usuário.
  *
  * @known_issues
  *   - Nenhum problema conhecido.
@@ -113,6 +115,7 @@ const TabNavigator = () => {
  *   - 2024-01-15 - IA - Adicionado bloco de documentação JSDoc completo.
  *   - 2024-01-15 - IA - Convertido para Stack Navigator contendo Tab Navigator e novas rotas.
  *   - 2025-12-06 - IA - Renomeada tela do Stack Navigator de "Home" para "MainTabs" para evitar conflito de nomes com a tela "Home" do Tab Navigator interno.
+ *   - 2025-12-06 - IA - Adicionado background slate gray nos botões de tab quando ativos para melhorar orientação do usuário.
  */
 const AppStack = () => {
   return (

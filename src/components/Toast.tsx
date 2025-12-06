@@ -21,6 +21,7 @@
  *
  * @changelog
  *   - 2025-12-06 - IA - Criação inicial do componente Toast com animações e auto-dismiss.
+ *   - 2025-12-06 - IA - Corrigido loop infinito removendo chamada de `handleDismiss()` quando `visible` é `false` no `useEffect`.
  */
 
 import React, { useEffect, useRef } from 'react';
@@ -101,9 +102,9 @@ const Toast: React.FC<ToastProps> = ({
         }, duration);
         return () => clearTimeout(timer);
       }
-    } else {
-      handleDismiss();
     }
+    // Removido o else que chamava handleDismiss quando visible era false
+    // Isso causava loop infinito ao atualizar o estado
   }, [visible, duration, position, opacityAnim, translateYAnim, handleDismiss]);
 
   const getTypeColor = () => {
@@ -138,6 +139,7 @@ const Toast: React.FC<ToastProps> = ({
         styles.container,
         getPositionStyle(),
         { pointerEvents: 'box-none' },
+        Platform.OS === 'web' && styles.webContainer,
       ]}
     >
       <Animated.View
@@ -148,6 +150,7 @@ const Toast: React.FC<ToastProps> = ({
             transform: [{ translateY: translateYAnim }],
             borderLeftColor: getTypeColor(),
           },
+          Platform.OS === 'web' && styles.webToast,
           style,
         ]}
       >
@@ -168,7 +171,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    zIndex: 9999,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    zIndex: 9999 as any,
+  },
+  webContainer: {
+    // Na web, garantir que está acima de tudo usando zIndex muito alto
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    zIndex: 99999 as any,
   },
   positionTop: {
     top: 60,
@@ -196,6 +205,10 @@ const styles = StyleSheet.create({
     ...theme.typography.body,
     color: theme.colors.text,
     flex: 1,
+  },
+  webToast: {
+    // Na web, garantir que o toast é clicável e visível
+    pointerEvents: 'auto',
   },
 });
 

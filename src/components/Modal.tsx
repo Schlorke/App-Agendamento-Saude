@@ -10,6 +10,8 @@
  *   - `message`: {string} - Mensagem principal do modal.
  *   - `primaryAction`: {Object} - Ação primária { label: string, onPress: () => void }.
  *   - `secondaryAction`: {Object} - Ação secundária { label: string, onPress: () => void } (opcional).
+ *   - `icon`: {React.ComponentType} - Ícone Lucide opcional para exibir antes do título.
+ *   - `showTopBorder`: {boolean} - Se false, remove a borda superior colorida do modal (padrão: true).
  *   - `onClose`: {() => void} - Função chamada ao fechar o modal (opcional).
  *   - `style`: {ViewStyle} - Estilos customizados para o container do modal.
  *
@@ -22,6 +24,7 @@
  *
  * @changelog
  *   - 2025-12-06 - IA - Criação inicial do componente Modal com animações e variantes.
+ *   - 2025-12-06 - IA - Adicionado suporte a ícone opcional e controle da borda superior (showTopBorder).
  */
 
 import React, { useEffect, useRef } from 'react';
@@ -51,6 +54,8 @@ export interface ModalProps {
     label: string;
     onPress: () => void;
   };
+  icon?: React.ComponentType<{ size?: number; color?: string }>;
+  showTopBorder?: boolean;
   onClose?: () => void;
   style?: ViewStyle;
 }
@@ -62,6 +67,8 @@ const Modal: React.FC<ModalProps> = ({
   message,
   primaryAction,
   secondaryAction,
+  icon: Icon,
+  showTopBorder = true,
   onClose,
   style,
 }) => {
@@ -139,9 +146,27 @@ const Modal: React.FC<ModalProps> = ({
               ]}
             >
               <View
-                style={[styles.header, { borderTopColor: getVariantColor() }]}
+                style={[
+                  styles.header,
+                  showTopBorder && { borderTopColor: getVariantColor() },
+                  !showTopBorder && styles.headerNoBorder,
+                ]}
               >
-                <Text style={styles.title}>{title}</Text>
+                <View style={styles.titleContainer}>
+                  {Icon && (
+                    <Icon
+                      size={24}
+                      color={
+                        variant === 'alert'
+                          ? theme.colors.error
+                          : variant === 'confirm'
+                            ? theme.colors.success
+                            : theme.colors.primary
+                      }
+                    />
+                  )}
+                  <Text style={styles.title}>{title}</Text>
+                </View>
               </View>
               <View style={styles.content}>
                 <Text style={styles.message}>{message}</Text>
@@ -195,9 +220,18 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: theme.borderRadius.xl,
     borderTopRightRadius: theme.borderRadius.xl,
   },
+  headerNoBorder: {
+    borderTopWidth: 0,
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
   title: {
     ...theme.typography.h2,
     color: theme.colors.text,
+    flex: 1,
   },
   content: {
     padding: theme.spacing.lg,

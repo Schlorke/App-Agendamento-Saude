@@ -8,6 +8,7 @@ import {
   TextStyle,
   AccessibilityRole,
   Animated,
+  Platform,
 } from 'react-native';
 import { theme } from '../styles/theme';
 import { scalePress, scaleRelease } from '../utils/animations';
@@ -106,44 +107,55 @@ const Button: React.FC<ButtonProps> = ({
     }
   };
 
+  const buttonContent = loading ? (
+    <ActivityIndicator
+      color={
+        variant === 'outline' ? theme.colors.primary : theme.colors.textLight
+      }
+    />
+  ) : (
+    <Text style={[getTextStyle(), textStyle]}>{title}</Text>
+  );
+
+  const buttonProps = {
+    style: [
+      styles.button,
+      getButtonStyle(),
+      disabled && styles.buttonDisabled,
+      fullWidth && styles.fullWidth,
+      style,
+      Platform.OS === 'web' && {
+        transform: [{ scale: scaleAnim }],
+      },
+    ],
+    onPress: handlePress,
+    onPressIn: handlePressIn,
+    onPressOut: handlePressOut,
+    disabled: disabled || loading,
+    activeOpacity: 1,
+    accessibilityRole: accessibilityRole,
+    accessibilityLabel: accessibilityLabel || title,
+    accessibilityHint: accessibilityHint,
+  };
+
+  // Na web, renderiza TouchableOpacity diretamente sem wrapper Animated.View
+  // No mobile, usa Animated.View wrapper para animação
+  if (Platform.OS === 'web') {
+    return (
+      <TouchableOpacity {...buttonProps}>{buttonContent}</TouchableOpacity>
+    );
+  }
+
   return (
     <Animated.View
       style={[
+        fullWidth && styles.fullWidth,
         {
           transform: [{ scale: scaleAnim }],
         },
-        fullWidth && styles.fullWidth,
       ]}
     >
-      <TouchableOpacity
-        style={[
-          styles.button,
-          getButtonStyle(),
-          disabled && styles.buttonDisabled,
-          fullWidth && styles.fullWidth,
-          style,
-        ]}
-        onPress={handlePress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        disabled={disabled || loading}
-        activeOpacity={1}
-        accessibilityRole={accessibilityRole}
-        accessibilityLabel={accessibilityLabel || title}
-        accessibilityHint={accessibilityHint}
-      >
-        {loading ? (
-          <ActivityIndicator
-            color={
-              variant === 'outline'
-                ? theme.colors.primary
-                : theme.colors.textLight
-            }
-          />
-        ) : (
-          <Text style={[getTextStyle(), textStyle]}>{title}</Text>
-        )}
-      </TouchableOpacity>
+      <TouchableOpacity {...buttonProps}>{buttonContent}</TouchableOpacity>
     </Animated.View>
   );
 };

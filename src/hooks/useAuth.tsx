@@ -3,6 +3,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useCallback,
   useState,
 } from 'react';
 import storageService from '../services/storageService';
@@ -26,6 +27,7 @@ import type { Usuario } from '../services/dataService';
  *
  * @changelog
  *   - 2025-12-06 - IA - Convertido para Context API com provider global e persistência para Web/Expo.
+ *   - 2025-12-06 - IA - Corrigido useMemo para usar useCallback nas funções e garantir atualização correta do contexto.
  */
 
 interface AuthContextValue {
@@ -69,23 +71,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     carregarSessao();
   }, []);
 
-  const login = async (usuarioData: Usuario) => {
+  const login = useCallback(async (usuarioData: Usuario) => {
     await storageService.salvarSessao(usuarioData.id);
     await storageService.salvarDadosUsuario(usuarioData);
     setUsuario(usuarioData);
     setIsAuthenticated(true);
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await storageService.removerSessao();
     setUsuario(null);
     setIsAuthenticated(false);
-  };
+  }, []);
 
-  const atualizarUsuario = async (usuarioData: Usuario) => {
+  const atualizarUsuario = useCallback(async (usuarioData: Usuario) => {
     await storageService.salvarDadosUsuario(usuarioData);
     setUsuario(usuarioData);
-  };
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -96,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       logout,
       atualizarUsuario,
     }),
-    [usuario, loading, isAuthenticated]
+    [usuario, loading, isAuthenticated, login, logout, atualizarUsuario]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

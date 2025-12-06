@@ -12,43 +12,13 @@ const apenasNumeros = (str: string): string => {
 /**
  * Valida se um CPF é válido
  * @param cpf - CPF a ser validado (com ou sem formatação)
- * @returns true se o CPF for válido, false caso contrário
+ * @returns true se o CPF tiver 11 dígitos, false caso contrário
  */
 export const validateCPF = (cpf: string): boolean => {
   const cpfLimpo = apenasNumeros(cpf);
 
-  if (cpfLimpo.length !== 11) {
-    return false;
-  }
-
-  // Verifica se todos os dígitos são iguais
-  if (/^(\d)\1{10}$/.test(cpfLimpo)) {
-    return false;
-  }
-
-  // Valida primeiro dígito verificador
-  let soma = 0;
-  for (let i = 0; i < 9; i++) {
-    soma += parseInt(cpfLimpo.charAt(i)) * (10 - i);
-  }
-  let resto = (soma * 10) % 11;
-  if (resto === 10 || resto === 11) resto = 0;
-  if (resto !== parseInt(cpfLimpo.charAt(9))) {
-    return false;
-  }
-
-  // Valida segundo dígito verificador
-  soma = 0;
-  for (let i = 0; i < 10; i++) {
-    soma += parseInt(cpfLimpo.charAt(i)) * (11 - i);
-  }
-  resto = (soma * 10) % 11;
-  if (resto === 10 || resto === 11) resto = 0;
-  if (resto !== parseInt(cpfLimpo.charAt(10))) {
-    return false;
-  }
-
-  return true;
+  // Apenas verifica se tem 11 dígitos
+  return cpfLimpo.length === 11;
 };
 
 /**
@@ -153,18 +123,69 @@ export const validateTelefone = (telefone: string): boolean => {
 };
 
 /**
- * Formata um telefone no padrão (XX) XXXXX-XXXX ou (XX) XXXX-XXXX
+ * Formata um telefone no padrão (XX) XXXXX-XXXX (celular) ou (XX) XXXX-XXXX (fixo)
+ * Formato celular: (00) 00000-0000
+ * Formato fixo: (00) 0000-0000
  */
 export const formatTelefone = (telefone: string): string => {
   const telefoneLimpo = apenasNumeros(telefone);
 
+  // Celular com 11 dígitos: (00) 00000-0000
   if (telefoneLimpo.length === 11) {
     return telefoneLimpo.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
   }
 
+  // Telefone fixo com 10 dígitos: (00) 0000-0000
   if (telefoneLimpo.length === 10) {
     return telefoneLimpo.replace(/^(\d{2})(\d{4})(\d{4})$/, '($1) $2-$3');
   }
 
+  // Retorna sem formatação se não tiver tamanho válido (menos de 10 dígitos)
   return telefone;
+};
+
+/**
+ * Converte data de YYYY-MM-DD para DD/MM/YYYY
+ * @param dataISO - Data no formato YYYY-MM-DD
+ * @returns Data no formato DD/MM/YYYY
+ */
+export const formatDataParaEdicao = (dataISO: string): string => {
+  if (!dataISO) return '';
+  const partes = dataISO.split('-');
+  if (partes.length !== 3) return '';
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
+};
+
+/**
+ * Converte data de DD/MM/YYYY para YYYY-MM-DD
+ * @param dataFormatada - Data no formato DD/MM/YYYY
+ * @returns Data no formato YYYY-MM-DD
+ */
+export const formatDataParaBanco = (dataFormatada: string): string => {
+  if (!dataFormatada || dataFormatada.length !== 10) return '';
+  const partes = dataFormatada.split('/');
+  if (partes.length !== 3) return '';
+  return `${partes[2]}-${partes[1]}-${partes[0]}`;
+};
+
+/**
+ * Formata data de nascimento enquanto o usuário digita (DD/MM/YYYY)
+ * @param text - Texto digitado
+ * @returns Data formatada
+ */
+export const formatDataNascimento = (text: string): string => {
+  const apenasNumeros = text.replace(/\D/g, '');
+
+  let formatado = apenasNumeros;
+  if (apenasNumeros.length >= 5) {
+    formatado = `${apenasNumeros.slice(0, 2)}/${apenasNumeros.slice(2, 4)}/${apenasNumeros.slice(4, 8)}`;
+  } else if (apenasNumeros.length >= 3) {
+    formatado = `${apenasNumeros.slice(0, 2)}/${apenasNumeros.slice(2)}`;
+  }
+
+  if (formatado.length <= 10) {
+    return formatado;
+  }
+
+  return text.slice(0, 10);
 };

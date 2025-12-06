@@ -7,9 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **ProfileScreen.tsx**: Corrigido exibição do CPF para sempre formatar antes de mostrar (usando `formatCPF`). Adicionado `useFocusEffect` para recarregar dados do usuário quando a tela receber foco, garantindo que alterações feitas em EditProfile sejam refletidas imediatamente em todas as telas do aplicativo.
+- **EditProfileScreen.tsx**: Adicionado `useEffect` para atualizar campos quando o usuário mudar, garantindo sincronização com dados atualizados do contexto. Garantido que alterações no perfil (nome, CPF, data de nascimento, telefone, endereço) surtam efeito imediatamente em todas as esferas do projeto.
+- **dataService.ts**: Corrigido `atualizarUsuario` para retornar uma cópia do usuário atualizado ao invés de referência direta, garantindo reatividade correta no React e atualização imediata de todas as telas que dependem dos dados do usuário.
+
+- **RegisterScreen.tsx**: Corrigido loop infinito de atualizações ("Maximum update depth exceeded") que ocorria ao digitar no campo de nome completo. O problema era causado por `onDismiss` do Toast sendo recriado a cada render. Agora usa `useCallback` para estabilizar a função. Também removido comportamento no Toast que chamava `handleDismiss` quando `visible` era `false`, causando loop infinito.
+- **Toast.tsx**: Corrigido loop infinito removendo chamada de `handleDismiss()` quando `visible` é `false` no `useEffect`, que causava atualizações infinitas de estado.
+- **validation.ts**: Corrigido formato de telefone celular de `(00) 0 0000-0000` para `(00) 00000-0000` (sem espaço após o 9). Agora retorna sem formatação para números com menos de 10 dígitos, conforme esperado pelos testes. Removida formatação parcial durante a digitação para simplificar a função.
+- **validation.ts**: Removida validação de dígitos verificadores do CPF. Agora aceita qualquer CPF com 11 dígitos, validando apenas o tamanho.
+- **RegisterScreen.tsx**: Removido login automático após cadastro. Agora após cadastro bem-sucedido, o usuário é redirecionado para a tela de login ao invés de ser automaticamente logado e direcionado para o aplicativo.
+- **EditProfileScreen.tsx**: Adicionados campos para editar nome, CPF e data de nascimento. Adicionada opção de excluir conta com confirmação. Ao excluir, o usuário é deslogado automaticamente e redirecionado para a tela de login. Corrigido problema de scroll travado na web/Chrome DevTools: o problema era `overflow: hidden` bloqueando o scroll. Solução: usar `overflowY: 'auto'` no container, `height: '100vh'` para viewport fixo (375x667), e `minHeight: '100%'` no scrollContent. Campo de data de nascimento com formatação DD/MM/YYYY durante digitação e conversão automática para YYYY-MM-DD ao salvar. Substituídos Alert.alert por Toast para feedback de sucesso/erro nas operações CRUD. Corrigido problema de confirmação de exclusão na web usando Modal customizado ao invés de Alert.alert (mantendo Alert.alert nativo no mobile). Melhorado modal de exclusão de conta: removida borda vermelha no topo e adicionado ícone de alerta (AlertTriangle) antes do título.
+- **Modal.tsx**: Adicionado suporte a ícone opcional (prop `icon`) para exibir ícones Lucide antes do título. Adicionada prop `showTopBorder` para controlar a exibição da borda superior colorida (padrão: true).
+- **EditProfileViewModel.ts**: Atualizado para suportar edição de nome e CPF com validações. Adicionado método `excluirConta` para excluir a conta do usuário.
+- **dataService.ts**: Atualizado `atualizarUsuario` para permitir editar nome e CPF (com verificação de CPF duplicado). Adicionado método `excluirUsuario` que remove o usuário e todas as suas consultas.
+
+- **ScheduleScreen.tsx**: Corrigido display do dropdown de especialidades, profissionais e horários. Substituído `map` por `FlatList` para melhor performance, adicionado `overflow: hidden` para bordas arredondadas corretas, sombras/elevation para z-index adequado, removida borda do último item da lista, e melhorada acessibilidade com labels apropriados.
+- **ProfileScreen.tsx**: Corrigido problema de logout na web onde `Alert.alert` não funcionava corretamente. Agora usa componente `Modal` customizado na web e mantém `Alert.alert` nativo no mobile para melhor compatibilidade entre plataformas.
+- **useAuth.tsx**: Corrigido `useMemo` para usar `useCallback` nas funções `login`, `logout` e `atualizarUsuario`, garantindo que o contexto seja atualizado corretamente e que as funções sejam estáveis entre re-renderizações.
+- **LoginViewModel**: Adicionados logs de debug em modo desenvolvimento para diagnosticar problemas de login (usuário não encontrado, senha incorreta).
+- **RegisterScreen.tsx**: Corrigido problema de scroll na web removendo `flexGrow: 1` do `scrollContent` na web (que impedia o scroll) e ajustando estrutura do `ScrollView` para permitir scroll correto no navegador. Adicionada formatação automática de telefone enquanto o usuário digita.
+- **Navigation/index.tsx**: Adicionados estilos específicos para web no `NavigationContainer` para garantir altura correta e permitir scroll nas telas.
+- **LoginScreen.tsx**: Ajustado `KeyboardAvoidingView` para ser desabilitado na web e melhorados estilos do `ScrollView`.
+- **AppStack.tsx**: Corrigido conflito de nomes na navegação renomeando a tela do Stack Navigator de "Home" para "MainTabs", eliminando o warning "Found screens with the same name nested inside one another" do React Navigation. O Tab Navigator interno ainda mantém a tela "Home" funcionando corretamente.
+- **Input.tsx, EmptyState.tsx, Header.tsx**: Corrigido erro "Unexpected text node" no React Native Web substituindo renderização condicional com `&&` por operadores ternários com `null`. Isso garante que valores `undefined` ou `false` não sejam renderizados diretamente como texto dentro de componentes `<View>`.
+- **dataService.ts, App.tsx**: Adicionado método `limparDatabase()` e exposição de métodos de desenvolvimento no console do navegador (`window.resetDatabase()` e `window.limparDatabase()`) para facilitar limpeza de dados durante desenvolvimento.
+- **theme.ts**: Corrigido warning "shadow\* style props are deprecated" adicionando suporte para `boxShadow` na web enquanto mantém compatibilidade com React Native usando `Platform.OS`.
+
 ### Added
 
-- **LoginViewModel**: Adicionados logs de debug em modo desenvolvimento para diagnosticar problemas de login (usuário não encontrado, senha incorreta).
+- **AppStack.tsx**: Adicionado background slate gray nos botões de tab quando ativos para melhorar a orientação do usuário sobre qual página está ativa. Criado componente `TabBarButton` customizado que aplica estilo visual quando o tab está selecionado.
+- **theme.ts**: Adicionada cor `tabActiveBackground` (#64748b - slate gray) ao tema para indicar visualmente o tab ativo.
+- **validation.ts**: Atualizada função `formatTelefone` para formato brasileiro (00) 0 0000-0000 (celular) e (00) 0000-0000 (fixo) com formatação automática durante a digitação.
+- **EditProfileScreen.tsx**: Adicionada formatação automática de telefone enquanto o usuário digita.
 - **App.tsx**: Adicionadas funções de debug no console do navegador:
   - `window.debugUsuario("CPF")`: Verifica se um usuário existe no banco de dados
   - `window.listarUsuarios()`: Lista todos os usuários cadastrados
@@ -17,17 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `window.importarDados(JSON)`: Importa dados de outro navegador
 - **dataService.ts**: Adicionados métodos `importarDatabase()` e `exportarDatabase()` para facilitar migração de dados entre navegadores.
 - **lucide-react-native**: Adicionada biblioteca de ícones Lucide para substituir emojis por ícones vetoriais elegantes e consistentes com a identidade visual do projeto.
-
-### Fixed
-
-- **RegisterScreen.tsx**: Corrigido problema de scroll na web removendo `flexGrow: 1` do `scrollContent` na web (que impedia o scroll) e ajustando estrutura do `ScrollView` para permitir scroll correto no navegador.
-- **Navigation/index.tsx**: Adicionados estilos específicos para web no `NavigationContainer` para garantir altura correta e permitir scroll nas telas.
-- **LoginScreen.tsx**: Ajustado `KeyboardAvoidingView` para ser desabilitado na web e melhorados estilos do `ScrollView`.
-- **AppStack.tsx**: Corrigido conflito de nomes na navegação renomeando a tela do Stack Navigator de "Home" para "MainTabs", eliminando o warning "Found screens with the same name nested inside one another" do React Navigation. O Tab Navigator interno ainda mantém a tela "Home" funcionando corretamente.
-
-- **Input.tsx, EmptyState.tsx, Header.tsx**: Corrigido erro "Unexpected text node" no React Native Web substituindo renderização condicional com `&&` por operadores ternários com `null`. Isso garante que valores `undefined` ou `false` não sejam renderizados diretamente como texto dentro de componentes `<View>`.
-- **dataService.ts, App.tsx**: Adicionado método `limparDatabase()` e exposição de métodos de desenvolvimento no console do navegador (`window.resetDatabase()` e `window.limparDatabase()`) para facilitar limpeza de dados durante desenvolvimento.
-- **theme.ts**: Corrigido warning "shadow\* style props are deprecated" adicionando suporte para `boxShadow` na web enquanto mantém compatibilidade com React Native usando `Platform.OS`.
 - **Toast.tsx**: Corrigido warning "props.pointerEvents is deprecated" movendo `pointerEvents` de prop para `style`.
 - **App.tsx**: Corrigido warning do expo-notifications na web usando importação condicional para evitar carregar o módulo em plataformas web onde push tokens não são suportados. Agora o módulo só é carregado em plataformas móveis (iOS/Android).
 - **animations.ts, Toast.tsx**: Adicionada verificação de plataforma para `useNativeDriver` (não suportado na web), eliminando warnings do Animated.

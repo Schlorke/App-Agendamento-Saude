@@ -362,7 +362,7 @@ class DataService {
    */
   async atualizarUsuario(
     usuarioId: string,
-    dados: Partial<Omit<Usuario, 'id' | 'cpf' | 'senhaHash'>>
+    dados: Partial<Omit<Usuario, 'id' | 'senhaHash'>>
   ): Promise<Usuario> {
     await simulateNetworkDelay(300);
     const database = await this.getDatabase();
@@ -372,9 +372,45 @@ class DataService {
       throw new Error('Usuário não encontrado');
     }
 
+    // Se está atualizando CPF, verifica se não está duplicado
+    if (dados.cpf) {
+      const cpfLimpo = dados.cpf.replace(/\D/g, '');
+      const cpfJaExiste = database.usuarios.some(
+        (u) => u.id !== usuarioId && u.cpf.replace(/\D/g, '') === cpfLimpo
+      );
+      if (cpfJaExiste) {
+        throw new Error('CPF já está cadastrado para outro usuário');
+      }
+      dados.cpf = cpfLimpo;
+    }
+
     Object.assign(usuario, dados);
     await this.persistDatabase(database);
-    return usuario;
+    // Retorna uma cópia do usuário para garantir reatividade no React
+    return { ...usuario };
+  }
+
+  /**
+   * Exclui um usuário e todas as suas consultas
+   */
+  async excluirUsuario(usuarioId: string): Promise<void> {
+    await simulateNetworkDelay(300);
+    const database = await this.getDatabase();
+    const usuarioIndex = database.usuarios.findIndex((u) => u.id === usuarioId);
+
+    if (usuarioIndex === -1) {
+      throw new Error('Usuário não encontrado');
+    }
+
+    // Remove o usuário
+    database.usuarios.splice(usuarioIndex, 1);
+
+    // Remove todas as consultas do usuário
+    database.consultas = database.consultas.filter(
+      (c) => c.usuarioId !== usuarioId
+    );
+
+    await this.persistDatabase(database);
   }
 
   /**

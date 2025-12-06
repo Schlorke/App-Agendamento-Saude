@@ -1,18 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Platform,
-  Alert,
-} from 'react-native';
-import { useAuth } from '../../hooks/useAuth';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, Platform } from 'react-native';
 import RegisterViewModel from '../../viewmodels/RegisterViewModel';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
+import Toast from '../../components/Toast';
 import { theme } from '../../styles/theme';
-import { formatCPF } from '../../utils/validation';
+import { formatCPF, formatTelefone } from '../../utils/validation';
 import type { AuthScreenProps } from '../../navigation/types';
 
 /**
@@ -43,6 +36,9 @@ import type { AuthScreenProps } from '../../navigation/types';
  * @changelog
  *   - 2024-01-15 - IA - Adicionado bloco de documentação JSDoc completo.
  *   - 2025-12-06 - IA - Alterado formato de data de nascimento para DD/MM/YYYY com formatação automática e conversão para YYYY-MM-DD antes de enviar ao ViewModel.
+ *   - 2025-12-06 - IA - Corrigido loop infinito de atualizações ao digitar no campo nome. `onDismiss` do Toast agora usa `useCallback` para estabilizar a função.
+ *   - 2025-12-06 - IA - Removida validação de dígitos verificadores. Agora aceita qualquer CPF com 11 dígitos.
+ *   - 2025-12-06 - IA - Removido login automático após cadastro. Agora redireciona para tela de login após cadastro bem-sucedido.
  */
 const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
   navigation,
@@ -62,8 +58,16 @@ const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
   const [confirmarSenhaError, setConfirmarSenhaError] = useState('');
 
   const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState<{
+    visible: boolean;
+    type: 'success' | 'error' | 'warning' | 'info';
+    message: string;
+  }>({
+    visible: false,
+    type: 'info',
+    message: '',
+  });
 
-  const { login: loginAuth } = useAuth();
   const viewModel = new RegisterViewModel();
 
   // Fix para scroll na web - aplica estilos CSS diretamente
@@ -133,6 +137,15 @@ const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
   };
 
   /**
+   * Formata o telefone enquanto o usuário digita
+   * Formato: (00) 00000-0000 para celular ou (00) 0000-0000 para fixo
+   */
+  const handleTelefoneChange = (text: string) => {
+    const telefoneFormatado = formatTelefone(text);
+    setTelefone(telefoneFormatado);
+  };
+
+  /**
    * Cadastra o novo usuário
    */
   const handleRegister = async () => {
@@ -198,25 +211,27 @@ const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
       });
 
       if (resultado.success && resultado.usuario) {
-        Alert.alert(
-          'Cadastro realizado!',
-          'Seu cadastro foi realizado com sucesso.',
-          [
-            {
-              text: 'OK',
-              onPress: async () => {
-                // Faz login automático após cadastro
-                await loginAuth(resultado.usuario!);
-                // Navegação será feita automaticamente
-              },
-            },
-          ]
-        );
+        // Mostra toast de sucesso
+        setToast({
+          visible: true,
+          type: 'success',
+          message: 'Cadastro realizado com sucesso!',
+        });
+
+        // Navega para a tela de login após um pequeno delay para o usuário ver o toast
+        setTimeout(() => {
+          navigation.navigate('Login');
+        }, 1500);
       } else {
-        Alert.alert(
-          'Erro no cadastro',
-          resultado.error || 'Não foi possível realizar o cadastro'
-        );
+        const errorMessage =
+          resultado.error || 'Não foi possível realizar o cadastro';
+
+        // Mostra toast de erro
+        setToast({
+          visible: true,
+          type: 'error',
+          message: errorMessage,
+        });
 
         if (resultado.error?.includes('CPF')) {
           setCpfError(resultado.error);
@@ -225,10 +240,11 @@ const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
         }
       }
     } catch {
-      Alert.alert(
-        'Erro',
-        'Ocorreu um erro ao realizar o cadastro. Tente novamente.'
-      );
+      setToast({
+        visible: true,
+        type: 'error',
+        message: 'Ocorreu um erro ao realizar o cadastro. Tente novamente.',
+      });
     } finally {
       setLoading(false);
     }
@@ -241,105 +257,126 @@ const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
     navigation.navigate('Login');
   };
 
+  /**
+   * Fecha o toast
+   */
+  const handleToastDismiss = useCallback(() => {
+    setToast((prev) => ({ ...prev, visible: false }));
+  }, []);
+
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={true}
-      nestedScrollEnabled={true}
-      alwaysBounceVertical={false}
-      bounces={false}
-      scrollEventThrottle={16}
-    >
-      <View style={styles.content}>
-        <Text style={styles.title}>Criar Conta</Text>
-        <Text style={styles.subtitle}>Preencha os dados para se cadastrar</Text>
+    <>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={true}
+        nestedScrollEnabled={true}
+        alwaysBounceVertical={false}
+        bounces={false}
+        scrollEventThrottle={16}
+      >
+        <View style={styles.content}>
+          <Text style={styles.title}>Criar Conta</Text>
+          <Text style={styles.subtitle}>
+            Preencha os dados para se cadastrar
+          </Text>
 
-        <View style={styles.form}>
-          <Input
-            label="Nome Completo *"
-            placeholder="Digite seu nome completo"
-            value={nome}
-            onChangeText={setNome}
-            error={nomeError}
-            autoCapitalize="words"
-          />
+          <View style={styles.form}>
+            <Input
+              label="Nome Completo *"
+              placeholder="Digite seu nome completo"
+              value={nome}
+              onChangeText={setNome}
+              error={nomeError}
+              autoCapitalize="words"
+            />
 
-          <Input
-            label="CPF *"
-            placeholder="000.000.000-00"
-            value={cpf}
-            onChangeText={handleCpfChange}
-            error={cpfError}
-            keyboardType="numeric"
-            maxLength={14}
-          />
+            <Input
+              label="CPF *"
+              placeholder="000.000.000-00"
+              value={cpf}
+              onChangeText={handleCpfChange}
+              error={cpfError}
+              keyboardType="numeric"
+              maxLength={14}
+            />
 
-          <Input
-            label="Data de Nascimento *"
-            placeholder="DD/MM/YYYY"
-            value={dataNascimento}
-            onChangeText={handleDataChange}
-            error={dataError}
-            keyboardType="numeric"
-            maxLength={10}
-          />
+            <Input
+              label="Data de Nascimento *"
+              placeholder="DD/MM/YYYY"
+              value={dataNascimento}
+              onChangeText={handleDataChange}
+              error={dataError}
+              keyboardType="numeric"
+              maxLength={10}
+            />
 
-          <Input
-            label="Telefone"
-            placeholder="(00) 00000-0000"
-            value={telefone}
-            onChangeText={setTelefone}
-            keyboardType="phone-pad"
-          />
+            <Input
+              label="Telefone"
+              placeholder="(00) 0 0000-0000"
+              value={telefone}
+              onChangeText={handleTelefoneChange}
+              keyboardType="phone-pad"
+              maxLength={15}
+            />
 
-          <Input
-            label="Endereço"
-            placeholder="Rua, número - Cidade, Estado"
-            value={endereco}
-            onChangeText={setEndereco}
-            multiline
-          />
+            <Input
+              label="Endereço"
+              placeholder="Rua, número - Cidade, Estado"
+              value={endereco}
+              onChangeText={setEndereco}
+              multiline
+            />
 
-          <Input
-            label="Senha *"
-            placeholder="Mínimo 6 caracteres"
-            value={senha}
-            onChangeText={setSenha}
-            error={senhaError}
-            secureTextEntry
-            autoCapitalize="none"
-          />
+            <Input
+              label="Senha *"
+              placeholder="Mínimo 6 caracteres"
+              value={senha}
+              onChangeText={setSenha}
+              error={senhaError}
+              secureTextEntry
+              autoCapitalize="none"
+            />
 
-          <Input
-            label="Confirmar Senha *"
-            placeholder="Digite a senha novamente"
-            value={confirmarSenha}
-            onChangeText={setConfirmarSenha}
-            error={confirmarSenhaError}
-            secureTextEntry
-            autoCapitalize="none"
-          />
+            <Input
+              label="Confirmar Senha *"
+              placeholder="Digite a senha novamente"
+              value={confirmarSenha}
+              onChangeText={setConfirmarSenha}
+              error={confirmarSenhaError}
+              secureTextEntry
+              autoCapitalize="none"
+            />
 
-          <Button
-            title="Cadastrar"
-            onPress={handleRegister}
-            loading={loading}
-            disabled={loading}
-            fullWidth
-            style={styles.registerButton}
-          />
+            <Button
+              title="Cadastrar"
+              onPress={handleRegister}
+              loading={loading}
+              disabled={loading}
+              fullWidth
+              style={styles.registerButton}
+            />
 
-          <View style={styles.loginContainer}>
-            <Text style={styles.loginText}>Já tem uma conta? </Text>
-            <Text style={styles.loginLink} onPress={handleNavigateToLogin}>
-              Entrar
-            </Text>
+            <View style={styles.loginContainer}>
+              <Text style={styles.loginText}>Já tem uma conta? </Text>
+              <Text style={styles.loginLink} onPress={handleNavigateToLogin}>
+                Entrar
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+
+      <Toast
+        visible={toast.visible}
+        type={toast.type}
+        message={toast.message}
+        position="top"
+        duration={3000}
+        onDismiss={handleToastDismiss}
+      />
+    </>
   );
 };
 

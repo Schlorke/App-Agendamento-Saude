@@ -1,8 +1,19 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  Platform,
+} from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../../hooks/useAuth';
+import dataService from '../../services/dataService';
 import { theme } from '../../styles/theme';
+import { formatCPF } from '../../utils/validation';
 import Button from '../../components/Button';
+import Modal from '../../components/Modal';
 import type { AppScreenProps } from '../../navigation/types';
 
 /**
@@ -13,7 +24,7 @@ import type { AppScreenProps } from '../../navigation/types';
  *   - `navigation`: {AppScreenProps<'Profile'>} - Objeto de navegação do React Navigation, permite navegar para EditProfileScreen.
  *
  * @state
- *   - Nenhum estado interno. Componente puramente apresentacional que exibe dados do usuário.
+ *   - `showLogoutModal`: {boolean} - Controla a visibilidade do modal de confirmação de logout (usado na web).
  *
  * @known_issues
  *   - Nenhum problema conhecido.
@@ -21,82 +32,142 @@ import type { AppScreenProps } from '../../navigation/types';
  * @changelog
  *   - 2024-01-15 - IA - Adicionado bloco de documentação JSDoc completo.
  *   - 2024-01-15 - IA - Implementada navegação para EditProfileScreen.
+ *   - 2025-12-06 - IA - Corrigido problema de logout na web usando Modal ao invés de Alert.alert.
+ *   - 2025-12-06 - IA - Corrigido exibição do CPF para sempre formatar antes de mostrar. Adicionado useFocusEffect para recarregar dados do usuário quando a tela receber foco, garantindo que alterações feitas em EditProfile sejam refletidas imediatamente.
  */
 const ProfileScreen: React.FC<AppScreenProps<'Profile'>> = ({ navigation }) => {
-  const { usuario, logout } = useAuth();
+  const { usuario, logout, atualizarUsuario } = useAuth();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  /**
+   * Recarrega os dados do usuário quando a tela receber foco
+   * Isso garante que qualquer alteração feita em EditProfile seja refletida aqui
+   */
+  useFocusEffect(
+    useCallback(() => {
+      const recarregarUsuario = async () => {
+        if (usuario?.id) {
+          try {
+            const usuarioAtualizado = await dataService.buscarUsuarioPorId(
+              usuario.id
+            );
+            if (usuarioAtualizado) {
+              await atualizarUsuario(usuarioAtualizado);
+            }
+          } catch (error) {
+            console.error('Erro ao recarregar usuário:', error);
+          }
+        }
+      };
+      recarregarUsuario();
+    }, [usuario, atualizarUsuario])
+  );
 
   const handleLogout = () => {
-    Alert.alert('Sair', 'Tem certeza que deseja sair?', [
-      {
-        text: 'Cancelar',
-        style: 'cancel',
-      },
-      {
-        text: 'Sair',
-        style: 'destructive',
-        onPress: async () => {
-          await logout();
+    if (Platform.OS === 'web') {
+      // Na web, usa Modal customizado pois Alert.alert pode não funcionar corretamente
+      setShowLogoutModal(true);
+    } else {
+      // No mobile, usa Alert.alert nativo
+      Alert.alert('Sair', 'Tem certeza que deseja sair?', [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
         },
-      },
-    ]);
+        {
+          text: 'Sair',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+          },
+        },
+      ]);
+    }
+  };
+
+  const confirmLogout = async () => {
+    setShowLogoutModal(false);
+    await logout();
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.profileSection}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {usuario?.nome?.charAt(0).toUpperCase() || 'U'}
-            </Text>
-          </View>
-          <Text style={styles.userName}>{usuario?.nome || 'Usuário'}</Text>
-          <Text style={styles.userCPF}>CPF: {usuario?.cpf || 'N/A'}</Text>
-        </View>
-
-        <View style={styles.infoSection}>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Data de Nascimento</Text>
-            <Text style={styles.infoValue}>
-              {usuario?.dataNascimento
-                ? new Date(usuario.dataNascimento).toLocaleDateString('pt-BR')
-                : 'N/A'}
+    <>
+      <ScrollView style={styles.container}>
+        <View style={styles.content}>
+          <View style={styles.profileSection}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>
+                {usuario?.nome?.charAt(0).toUpperCase() || 'U'}
+              </Text>
+            </View>
+            <Text style={styles.userName}>{usuario?.nome || 'Usuário'}</Text>
+            <Text style={styles.userCPF}>
+              CPF: {usuario?.cpf ? formatCPF(usuario.cpf) : 'N/A'}
             </Text>
           </View>
 
-          {usuario?.telefone && (
+          <View style={styles.infoSection}>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Telefone</Text>
-              <Text style={styles.infoValue}>{usuario.telefone}</Text>
+              <Text style={styles.infoLabel}>Data de Nascimento</Text>
+              <Text style={styles.infoValue}>
+                {usuario?.dataNascimento
+                  ? new Date(usuario.dataNascimento).toLocaleDateString('pt-BR')
+                  : 'N/A'}
+              </Text>
             </View>
-          )}
 
-          {usuario?.endereco && (
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Endereço</Text>
-              <Text style={styles.infoValue}>{usuario.endereco}</Text>
-            </View>
-          )}
+            {usuario?.telefone && (
+              <View style={styles.infoItem}>
+                <Text style={styles.infoLabel}>Telefone</Text>
+                <Text style={styles.infoValue}>{usuario.telefone}</Text>
+              </View>
+            )}
+
+            {usuario?.endereco && (
+              <View style={styles.infoItem}>
+                <Text style={styles.infoLabel}>Endereço</Text>
+                <Text style={styles.infoValue}>{usuario.endereco}</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.actionsSection}>
+            <Button
+              title="Editar Perfil"
+              onPress={() => navigation.navigate('EditProfile')}
+              variant="outline"
+              fullWidth
+            />
+
+            <Button
+              title="Sair"
+              onPress={handleLogout}
+              variant="outline"
+              fullWidth
+              style={styles.logoutButton}
+            />
+          </View>
         </View>
+      </ScrollView>
 
-        <View style={styles.actionsSection}>
-          <Button
-            title="Editar Perfil"
-            onPress={() => navigation.navigate('EditProfile')}
-            variant="outline"
-            fullWidth
-          />
-
-          <Button
-            title="Sair"
-            onPress={handleLogout}
-            variant="outline"
-            fullWidth
-            style={styles.logoutButton}
-          />
-        </View>
-      </View>
-    </ScrollView>
+      {Platform.OS === 'web' && (
+        <Modal
+          visible={showLogoutModal}
+          variant="confirm"
+          title="Sair"
+          message="Tem certeza que deseja sair?"
+          primaryAction={{
+            label: 'Sair',
+            onPress: confirmLogout,
+          }}
+          secondaryAction={{
+            label: 'Cancelar',
+            onPress: () => setShowLogoutModal(false),
+          }}
+          onClose={() => setShowLogoutModal(false)}
+        />
+      )}
+    </>
   );
 };
 

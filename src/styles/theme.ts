@@ -44,6 +44,7 @@ export const theme = {
     textLight: '#FFFFFF',
     border: '#E0E0E0',
     disabled: '#BDBDBD',
+    tabActiveBackground: 'rgba(100, 116, 139, 0.1)', // Slate gray muito sutil e leve para indicar tab ativo
   },
   typography: {
     h1: {
