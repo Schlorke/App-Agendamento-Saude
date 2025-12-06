@@ -17,6 +17,18 @@ web-build/
 *.key
 *.mobileprovision
 
+# Android / Gradle
+android/
+ios/
+.gradle/
+**/build/
+**/.gradle/
+**/local.properties
+**/gradle-wrapper.jar
+**/gradlew
+**/gradlew.bat
+*.iml
+
 # Metro
 .metro-health-check*
 

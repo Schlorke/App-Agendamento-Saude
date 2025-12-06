@@ -23,4 +23,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Corrigido erro de linting no arquivo `temp-template/package/metro.config.js` adicionando `temp-template/` aos padrões ignorados do ESLint
+- Corrigido erro de permissão ao fazer `git add` adicionando `.gradle/` e `temp-template/` ao `.gitignore`
+- Adicionado `.gitattributes` para normalizar line endings (LF/CRLF) automaticamente
+- Adicionado `android/` e `ios/` ao `.gitignore` para ignorar diretórios nativos gerados pelo `expo prebuild`
+- Corrigidos warnings do npm alterando script `build` para usar `pnpm` ao invés de `npm`, eliminando avisos sobre configurações de ambiente desconhecidas
+- Removido aviso do script `prebuild` sobre possível falha do Expo SDK 54
+- Resolvido aviso do Android `userInterfaceStyle` instalando `expo-system-ui`
+
+### Removed
+
+- Removida pasta `temp-template/` que não estava sendo utilizada no projeto (template temporário do Expo)
+
 ### Security

@@ -51,7 +51,8 @@
     "*.log",
     ".expo-shared/",
     "jest.config.js",
-    "jest.setup.js"
+    "jest.setup.js",
+    "temp-template/"
   ],
   "overrides": [
     {
