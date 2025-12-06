@@ -1,0 +1,169 @@
+{
+  "usuarios": [
+    {
+      "id": "1",
+      "nome": "Maria Silva",
+      "cpf": "12345678901",
+      "dataNascimento": "1990-05-15",
+      "senhaHash": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+      "telefone": "(11) 98765-4321",
+      "endereco": "Rua das Flores, 123 - São Paulo, SP"
+    },
+    {
+      "id": "2",
+      "nome": "João Santos",
+      "cpf": "98765432100",
+      "dataNascimento": "1985-08-20",
+      "senhaHash": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+      "telefone": "(11) 91234-5678",
+      "endereco": "Av. Principal, 456 - São Paulo, SP"
+    }
+  ],
+  "especialidades": [
+    {
+      "id": "1",
+      "nome": "Clínico Geral",
+      "descricao": "Atendimento geral de saúde"
+    },
+    {
+      "id": "2",
+      "nome": "Pediatria",
+      "descricao": "Atendimento infantil"
+    },
+    {
+      "id": "3",
+      "nome": "Ginecologia",
+      "descricao": "Saúde da mulher"
+    },
+    {
+      "id": "4",
+      "nome": "Cardiologia",
+      "descricao": "Cuidados do coração"
+    },
+    {
+      "id": "5",
+      "nome": "Oftalmologia",
+      "descricao": "Cuidados com os olhos"
+    }
+  ],
+  "profissionais": [
+    {
+      "id": "1",
+      "nome": "Dr. Carlos Mendes",
+      "especialidadeId": "1",
+      "crm": "12345-SP"
+    },
+    {
+      "id": "2",
+      "nome": "Dra. Ana Paula",
+      "especialidadeId": "1",
+      "crm": "23456-SP"
+    },
+    {
+      "id": "3",
+      "nome": "Dr. Pedro Alves",
+      "especialidadeId": "2",
+      "crm": "34567-SP"
+    },
+    {
+      "id": "4",
+      "nome": "Dra. Juliana Costa",
+      "especialidadeId": "3",
+      "crm": "45678-SP"
+    },
+    {
+      "id": "5",
+      "nome": "Dr. Roberto Lima",
+      "especialidadeId": "4",
+      "crm": "56789-SP"
+    }
+  ],
+  "horarios": [
+    "08:00",
+    "08:30",
+    "09:00",
+    "09:30",
+    "10:00",
+    "10:30",
+    "11:00",
+    "11:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30",
+    "16:00",
+    "16:30",
+    "17:00",
+    "17:30"
+  ],
+  "consultas": [
+    {
+      "id": "1",
+      "usuarioId": "1",
+      "especialidadeId": "1",
+      "profissionalId": "1",
+      "data": "2024-12-20",
+      "horario": "09:00",
+      "status": "agendada",
+      "criadaEm": "2024-12-15T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "usuarioId": "1",
+      "especialidadeId": "2",
+      "profissionalId": "3",
+      "data": "2024-11-10",
+      "horario": "14:00",
+      "status": "realizada",
+      "criadaEm": "2024-11-05T10:00:00Z"
+    }
+  ],
+  "noticias": [
+    {
+      "id": "1",
+      "titulo": "Campanha de Vacinação contra a Gripe",
+      "conteudo": "A campanha de vacinação contra a gripe está disponível em todos os postos de saúde.",
+      "data": "2024-12-01",
+      "imagem": null
+    },
+    {
+      "id": "2",
+      "titulo": "Novo Horário de Funcionamento",
+      "conteudo": "Os postos de saúde agora funcionam das 7h às 19h, de segunda a sexta.",
+      "data": "2024-12-10",
+      "imagem": null
+    }
+  ],
+  "farmacias": [
+    {
+      "id": "1",
+      "nome": "Farmácia Popular",
+      "endereco": "Rua Central, 100",
+      "telefone": "(11) 3456-7890",
+      "plantao": true,
+      "horario": "24 horas"
+    },
+    {
+      "id": "2",
+      "nome": "Drogaria Saúde",
+      "endereco": "Av. Principal, 200",
+      "telefone": "(11) 3456-7891",
+      "plantao": true,
+      "horario": "24 horas"
+    }
+  ],
+  "medicamentos": [
+    {
+      "id": "1",
+      "nome": "Paracetamol",
+      "descricao": "Analgésico e antitérmico",
+      "dosagem": "500mg"
+    },
+    {
+      "id": "2",
+      "nome": "Ibuprofeno",
+      "descricao": "Anti-inflamatório",
+      "dosagem": "400mg"
+    }
+  ]
+}

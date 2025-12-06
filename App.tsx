@@ -1,20 +1,29 @@
+import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import Navigation from './src/navigation';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+/**
+ * @component App
+ * @description Componente raiz do aplicativo. Configura o SafeAreaProvider e o NavigationContainer.
+ *
+ * @props
+ *   - Nenhuma prop. Componente raiz que não recebe props.
+ *
+ * @state
+ *   - Nenhum estado interno. Componente puramente estrutural.
+ *
+ * @known_issues
+ *   - Nenhum problema conhecido.
+ *
+ * @changelog
+ *   - 2024-01-15 - IA - Adicionado bloco de documentação JSDoc completo.
+ */
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
+    <SafeAreaProvider>
+      <Navigation />
       <StatusBar style="auto" />
-    </View>
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
