@@ -344,9 +344,9 @@ graph TB
     MODEL -.->|"Retorna dados"| VIEWMODEL
     VIEWMODEL -.->|"Atualiza estado"| VIEW
 
-    style VIEW fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
-    style VIEWMODEL fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
-    style MODEL fill:#E8F5E9,stroke:#388E3C,stroke-width:2px
+    style VIEW fill:#E3F2FD,stroke:#1976D2,stroke-width:2px,color:#000
+    style VIEWMODEL fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px,color:#000
+    style MODEL fill:#E8F5E9,stroke:#388E3C,stroke-width:2px,color:#000
 ```
 
 ### Regra de Ouro
