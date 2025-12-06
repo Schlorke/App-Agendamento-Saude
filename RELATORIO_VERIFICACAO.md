@@ -8,7 +8,7 @@
 
 ## 📊 RESUMO EXECUTIVO
 
-```
+```text
 ✅ CONFORME: 5 itens
 ⚠️ PARCIALMENTE CONFORME: 4 itens
 ❌ NÃO CONFORME: 11 itens
@@ -18,18 +18,18 @@
 
 ## 1️⃣ REQUISITOS FUNCIONAIS (10 obrigatórios)
 
-| ID       | Requisito                                                      | Status     | Localização no Código                                                           | Observações                                                        |
-| -------- | -------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| **RF01** | Cadastro de usuário (nome, CPF, data de nascimento, senha)     | ✅ **SIM** | `src/screens/Auth/RegisterScreen.tsx`<br>`src/viewmodels/RegisterViewModel.ts`  | Implementado com validação completa                                |
-| **RF02** | Login com CPF e senha                                          | ✅ **SIM** | `src/screens/Auth/LoginScreen.tsx`<br>`src/viewmodels/LoginViewModel.ts`        | Implementado com autenticação                                      |
-| **RF03** | Agendamento de consulta (especialidade, profissional, horário) | ✅ **SIM** | `src/screens/App/ScheduleScreen.tsx`<br>`src/viewmodels/ScheduleViewModel.ts`   | Implementado com validação de horários                             |
-| **RF04** | Cancelamento de consulta (mínimo 24h antecedência)             | ❌ **NÃO** | `src/viewmodels/CancelAppointmentViewModel.ts`<br>`src/services/dataService.ts` | Cancelamento existe mas **NÃO valida 24h de antecedência**         |
-| **RF05** | Histórico de consultas (realizadas e futuras)                  | ✅ **SIM** | `src/screens/App/HistoryScreen.tsx`                                             | Implementado com filtros                                           |
-| **RF06** | Quadro de notícias com campanhas de saúde                      | ❌ **NÃO** | `src/data/db.json` (dados existem)                                              | Dados mockados existem mas **não há tela implementada**            |
-| **RF07** | Lista de farmácias de plantão (endereço e telefone)            | ❌ **NÃO** | `src/data/db.json` (dados existem)                                              | Dados mockados existem mas **não há tela implementada**            |
-| **RF08** | Notificações push (confirmação e lembretes)                    | ❌ **NÃO** | `package.json` (expo-notifications instalado)                                   | Biblioteca instalada mas **não há implementação funcional**        |
-| **RF09** | Edição de perfil (telefone, endereço)                          | ❌ **NÃO** | `src/screens/App/ProfileScreen.tsx`                                             | Botão existe mas **funcionalidade não implementada** (apenas TODO) |
-| **RF10** | Informações sobre medicamentos disponíveis                     | ❌ **NÃO** | `src/data/db.json` (dados existem)                                              | Dados mockados existem mas **não há tela implementada**            |
+| ID       | Requisito                                                      | Status     | Localização no Código                                                         | Observações                                                        |
+| -------- | -------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **RF01** | Cadastro de usuário (nome, CPF, data de nascimento, senha)     | ✅ **SIM** | `src/screens/Auth/RegisterScreen.tsx`, `src/viewmodels/RegisterViewModel.ts`  | Implementado com validação completa                                |
+| **RF02** | Login com CPF e senha                                          | ✅ **SIM** | `src/screens/Auth/LoginScreen.tsx`, `src/viewmodels/LoginViewModel.ts`        | Implementado com autenticação                                      |
+| **RF03** | Agendamento de consulta (especialidade, profissional, horário) | ✅ **SIM** | `src/screens/App/ScheduleScreen.tsx`, `src/viewmodels/ScheduleViewModel.ts`   | Implementado com validação de horários                             |
+| **RF04** | Cancelamento de consulta (mínimo 24h antecedência)             | ❌ **NÃO** | `src/viewmodels/CancelAppointmentViewModel.ts`, `src/services/dataService.ts` | Cancelamento existe mas **NÃO valida 24h de antecedência**         |
+| **RF05** | Histórico de consultas (realizadas e futuras)                  | ✅ **SIM** | `src/screens/App/HistoryScreen.tsx`                                           | Implementado com filtros                                           |
+| **RF06** | Quadro de notícias com campanhas de saúde                      | ❌ **NÃO** | `src/data/db.json` (dados existem)                                            | Dados mockados existem mas **não há tela implementada**            |
+| **RF07** | Lista de farmácias de plantão (endereço e telefone)            | ❌ **NÃO** | `src/data/db.json` (dados existem)                                            | Dados mockados existem mas **não há tela implementada**            |
+| **RF08** | Notificações push (confirmação e lembretes)                    | ❌ **NÃO** | `package.json` (expo-notifications instalado)                                 | Biblioteca instalada mas **não há implementação funcional**        |
+| **RF09** | Edição de perfil (telefone, endereço)                          | ❌ **NÃO** | `src/screens/App/ProfileScreen.tsx`                                           | Botão existe mas **funcionalidade não implementada** (apenas TODO) |
+| **RF10** | Informações sobre medicamentos disponíveis                     | ❌ **NÃO** | `src/data/db.json` (dados existem)                                            | Dados mockados existem mas **não há tela implementada**            |
 
 **Resultado**: 3/10 requisitos funcionais completamente implementados
 
@@ -279,32 +279,32 @@
 
 ### Prioridade MÉDIA (Melhorias importantes)
 
-5. **Adicionar testes E2E com Detox**
+1. **Adicionar testes E2E com Detox**
    - Configurar Detox
    - Criar testes básicos de fluxo (login → agendamento → cancelamento)
 
-6. **Melhorar conformidade LGPD** (RNF04)
+2. **Melhorar conformidade LGPD** (RNF04)
    - Criptografar dados sensíveis em storage
    - Documentar medidas de segurança
 
-7. **Adicionar evidências de acessibilidade** (RNF02)
+3. **Adicionar evidências de acessibilidade** (RNF02)
    - Testar com leitores de tela
    - Adicionar `accessibilityLabel` e `accessibilityHint` em todos os componentes interativos
    - Documentar conformidade WCAG
 
 ### Prioridade BAIXA (Nice to have)
 
-8. **Documentar performance** (RNF01)
+1. **Documentar performance** (RNF01)
    - Adicionar métricas de tempo de resposta
    - Garantir < 3s em todos os fluxos
 
-9. **Melhorar cobertura de testes**
+2. **Melhorar cobertura de testes**
    - Executar `npm run test:coverage`
    - Aumentar cobertura para > 80%
 
-10. **Adicionar documentação de deployment**
-    - Instruções para build de produção
-    - Configuração de ambiente
+3. **Adicionar documentação de deployment**
+   - Instruções para build de produção
+   - Configuração de ambiente
 
 ---
 

@@ -134,33 +134,33 @@ Sistema de elevação usando sombras para criar hierarquia visual:
 
 #### Variantes
 
-**Primary (Padrão)**
+##### Primary (Padrão)
 
 - Cor de fundo: Verde Saúde (`#2E7D32`)
 - Cor do texto: Branco (`#FFFFFF`)
 - Uso: Ações principais (Salvar, Confirmar, Entrar)
 
-**Secondary**
+##### Secondary
 
 - Cor de fundo: Azul (`#1976D2`)
 - Cor do texto: Branco (`#FFFFFF`)
 - Uso: Ações secundárias (Cancelar, Voltar)
 
-**Outline**
+##### Outline
 
 - Cor de fundo: Transparente
 - Borda: Verde Saúde (`#2E7D32`)
 - Cor do texto: Verde Saúde (`#2E7D32`)
 - Uso: Ações terciárias, ações menos importantes
 
-#### Estados
+#### Estados dos Botões
 
 - **Default**: Estado normal do botão
 - **Pressed**: Opacidade reduzida (0.7) ao toque
 - **Disabled**: Cor cinza (`#BDBDBD`), opacidade 0.6, interação desabilitada
 - **Loading**: Exibe `ActivityIndicator` no lugar do texto
 
-#### Especificações
+#### Especificações dos Botões
 
 - Altura mínima: 50px
 - Padding horizontal: 24px
@@ -169,14 +169,14 @@ Sistema de elevação usando sombras para criar hierarquia visual:
 
 ### Inputs
 
-#### Estados
+#### Estados dos Inputs
 
 - **Default**: Borda cinza (`#E0E0E0`), fundo branco
 - **Focused**: Borda verde (`#2E7D32`), pode adicionar sombra sutil
 - **Error**: Borda vermelha (`#D32F2F`), mensagem de erro abaixo
 - **Disabled**: Fundo cinza claro, texto cinza, interação desabilitada
 
-#### Especificações
+#### Especificações dos Inputs
 
 - Altura: 50px
 - Padding horizontal: 16px
@@ -185,7 +185,7 @@ Sistema de elevação usando sombras para criar hierarquia visual:
 
 ### Cards
 
-#### Especificações
+#### Especificações dos Cards
 
 - Fundo: Branco (`#FFFFFF`)
 - Border radius: 12px (LG)
@@ -219,7 +219,7 @@ Sistema de elevação usando sombras para criar hierarquia visual:
 - Elementos complexos devem ter `accessibilityHint`
 - Use `accessibilityRole` apropriado (button, text, header, etc.)
 
-### Exemplo:
+### Exemplo
 
 ```typescript
 <TouchableOpacity

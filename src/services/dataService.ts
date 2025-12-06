@@ -9,9 +9,9 @@ interface Database {
   profissionais: Profissional[];
   consultas: Consulta[];
   horarios: string[];
-  noticias?: unknown[];
-  farmacias?: unknown[];
-  medicamentos?: unknown[];
+  noticias?: Noticia[];
+  farmacias?: Farmacia[];
+  medicamentos?: Medicamento[];
 }
 
 /**
@@ -49,6 +49,30 @@ export interface Consulta {
   horario: string;
   status: 'agendada' | 'realizada' | 'cancelada';
   criadaEm: string;
+}
+
+export interface Noticia {
+  id: string;
+  titulo: string;
+  conteudo: string;
+  data: string;
+  imagem: string | null;
+}
+
+export interface Farmacia {
+  id: string;
+  nome: string;
+  endereco: string;
+  telefone: string;
+  plantao: boolean;
+  horario: string;
+}
+
+export interface Medicamento {
+  id: string;
+  nome: string;
+  descricao: string;
+  dosagem: string;
 }
 
 /**
@@ -193,6 +217,16 @@ class DataService {
   }
 
   /**
+   * Busca uma consulta por ID
+   */
+  async buscarConsultaPorId(consultaId: string): Promise<Consulta | null> {
+    await simulateNetworkDelay(200);
+    const database = db as Database;
+    const consulta = database.consultas.find((c) => c.id === consultaId);
+    return consulta || null;
+  }
+
+  /**
    * Cancela uma consulta
    */
   async cancelarConsulta(consultaId: string): Promise<Consulta> {
@@ -233,6 +267,33 @@ class DataService {
 
     Object.assign(usuario, dados);
     return usuario;
+  }
+
+  /**
+   * Busca todas as notícias
+   */
+  async buscarNoticias(): Promise<Noticia[]> {
+    await simulateNetworkDelay(300);
+    const database = db as Database;
+    return database.noticias || [];
+  }
+
+  /**
+   * Busca todas as farmácias de plantão
+   */
+  async buscarFarmacias(): Promise<Farmacia[]> {
+    await simulateNetworkDelay(300);
+    const database = db as Database;
+    return database.farmacias || [];
+  }
+
+  /**
+   * Busca todos os medicamentos
+   */
+  async buscarMedicamentos(): Promise<Medicamento[]> {
+    await simulateNetworkDelay(300);
+    const database = db as Database;
+    return database.medicamentos || [];
   }
 }
 

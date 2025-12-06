@@ -36,6 +36,7 @@ Aplicativo mobile completo para agendamento de consultas em postos de saúde, de
 - **TypeScript** - Tipagem estática
 - **React Navigation** - Navegação entre telas
 - **AsyncStorage** - Persistência local de dados
+- **Expo Notifications** - Sistema de notificações push
 - **Jest** - Framework de testes
 - **React Testing Library** - Testes de componentes React
 - **Crypto-js** - Hash seguro de senhas (SHA-256)
@@ -106,7 +107,14 @@ HoW/
 │   │   │   ├── LoginScreen.tsx
 │   │   │   └── RegisterScreen.tsx
 │   │   └── App/         # Telas autenticadas
+│   │       ├── EditProfileScreen.tsx
+│   │       ├── HistoryScreen.tsx
 │   │       ├── HomeScreen.tsx
+│   │       ├── MedicationsScreen.tsx
+│   │       ├── NewsScreen.tsx
+│   │       ├── PharmaciesScreen.tsx
+│   │       ├── ProfileScreen.tsx
+│   │       └── ScheduleScreen.tsx
 │   │       ├── ScheduleScreen.tsx
 │   │       ├── HistoryScreen.tsx
 │   │       └── ProfileScreen.tsx
@@ -120,9 +128,17 @@ HoW/
 │   │   └── validation.ts
 │   └── viewmodels/      # Lógica de estado (MVVM)
 │       ├── CancelAppointmentViewModel.ts
+│       ├── EditProfileViewModel.ts
 │       ├── LoginViewModel.ts
+│       ├── MedicationsViewModel.ts
+│       ├── NewsViewModel.ts
+│       ├── PharmaciesViewModel.ts
 │       ├── RegisterViewModel.ts
 │       └── ScheduleViewModel.ts
+│   └── services/        # Serviços (Model)
+│       ├── dataService.ts
+│       ├── notificationService.ts
+│       └── storageService.ts
 ├── __tests__/           # Testes
 │   ├── components/
 │   ├── screens/
@@ -174,9 +190,11 @@ Para mais detalhes sobre a arquitetura, consulte [ARCHITECTURE.md](docs/ARCHITEC
 ### RF04: Cancelamento de Consulta ✅
 
 - Cancelamento de consultas agendadas
+- **Validação de 24 horas de antecedência obrigatória**
 - Validação de status da consulta
 - Confirmação antes de cancelar
 - Feedback visual de sucesso/erro
+- Cancelamento automático de notificações relacionadas
 
 ### RF05: Histórico de Consultas ✅
 
@@ -184,6 +202,40 @@ Para mais detalhes sobre a arquitetura, consulte [ARCHITECTURE.md](docs/ARCHITEC
 - Filtros por status (agendadas, realizadas, canceladas)
 - Integração com cancelamento
 - Visualização detalhada de cada consulta
+
+### RF06: Quadro de Notícias e Campanhas ✅
+
+- Tela dedicada para notícias e campanhas de saúde
+- Listagem de todas as notícias disponíveis
+- Exibição de título, conteúdo e data
+- Navegação a partir da tela inicial
+
+### RF07: Farmácias de Plantão ✅
+
+- Tela com lista de farmácias de plantão
+- Informações completas: nome, endereço, telefone e horário
+- Navegação a partir da tela inicial
+
+### RF08: Notificações Push ✅
+
+- Notificações de confirmação ao agendar consulta
+- Notificações de lembrete 1 dia antes da consulta
+- Cancelamento automático de notificações ao cancelar consulta
+- Solicitação de permissões na inicialização do app
+- Handlers configurados para notificações em foreground e background
+
+### RF09: Edição de Perfil ✅
+
+- Tela dedicada para editar informações do perfil
+- Edição de telefone e endereço
+- Validação de campos
+- Atualização automática do estado do usuário após edição
+
+### RF10: Informações sobre Medicamentos ✅
+
+- Tela com lista de medicamentos disponíveis
+- Informações completas: nome, descrição e dosagem
+- Navegação a partir da tela inicial
 
 ## 🧪 Testes
 

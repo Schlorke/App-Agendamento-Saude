@@ -137,7 +137,7 @@ O banco de dados é simulado através do arquivo `/src/data/db.json` contendo:
 
 ### Exemplo: Fluxo de Login
 
-```
+```text
 1. Usuário preenche CPF e senha na LoginScreen (View)
    ↓
 2. Usuário clica em "Entrar"
@@ -173,7 +173,7 @@ O projeto utiliza **React Navigation** com navegação condicional baseada em au
 
 **Fluxo de Navegação**:
 
-```
+```text
 App.tsx
   └── Navigation (index.tsx)
       ├── useAuth() verifica autenticação
@@ -221,7 +221,7 @@ A estrutura de testes espelha a estrutura de `src`:
 
 ## Diagrama de Arquitetura
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │                        View Layer                        │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │

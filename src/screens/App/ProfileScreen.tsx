@@ -10,18 +10,19 @@ import type { AppScreenProps } from '../../navigation/types';
  * @description Tela de perfil do usuário. Exibe informações pessoais e permite editar perfil ou fazer logout.
  *
  * @props
- *   - Nenhuma prop direta. Utiliza apenas o hook `useAuth` para obter dados do usuário e função de logout.
+ *   - `navigation`: {AppScreenProps<'Profile'>} - Objeto de navegação do React Navigation, permite navegar para EditProfileScreen.
  *
  * @state
  *   - Nenhum estado interno. Componente puramente apresentacional que exibe dados do usuário.
  *
  * @known_issues
- *   - Funcionalidade de edição de perfil ainda não implementada (RF09 - Próxima funcionalidade).
+ *   - Nenhum problema conhecido.
  *
  * @changelog
  *   - 2024-01-15 - IA - Adicionado bloco de documentação JSDoc completo.
+ *   - 2024-01-15 - IA - Implementada navegação para EditProfileScreen.
  */
-const ProfileScreen: React.FC<AppScreenProps<'Profile'>> = () => {
+const ProfileScreen: React.FC<AppScreenProps<'Profile'>> = ({ navigation }) => {
   const { usuario, logout } = useAuth();
 
   const handleLogout = () => {
@@ -81,13 +82,7 @@ const ProfileScreen: React.FC<AppScreenProps<'Profile'>> = () => {
         <View style={styles.actionsSection}>
           <Button
             title="Editar Perfil"
-            onPress={() => {
-              // TODO: Implementar edição de perfil (RF09)
-              Alert.alert(
-                'Em breve',
-                'A funcionalidade de edição será implementada em breve.'
-              );
-            }}
+            onPress={() => navigation.navigate('EditProfile')}
             variant="outline"
             fullWidth
           />

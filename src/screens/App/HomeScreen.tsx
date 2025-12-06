@@ -60,6 +60,36 @@ const HomeScreen: React.FC<AppScreenProps<'Home'>> = ({ navigation }) => {
 
           <TouchableOpacity
             style={styles.menuItem}
+            onPress={() => navigation.navigate('News')}
+          >
+            <Text style={styles.menuItemTitle}>📰 Notícias e Campanhas</Text>
+            <Text style={styles.menuItemDescription}>
+              Fique por dentro das campanhas de saúde
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('Pharmacies')}
+          >
+            <Text style={styles.menuItemTitle}>💊 Farmácias de Plantão</Text>
+            <Text style={styles.menuItemDescription}>
+              Encontre farmácias abertas 24 horas
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('Medications')}
+          >
+            <Text style={styles.menuItemTitle}>💉 Medicamentos</Text>
+            <Text style={styles.menuItemDescription}>
+              Informações sobre medicamentos disponíveis
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
             onPress={() => navigation.navigate('Profile')}
           >
             <Text style={styles.menuItemTitle}>👤 Perfil</Text>

@@ -1,4 +1,5 @@
 import dataService from '../services/dataService';
+import notificationService from '../services/notificationService';
 import type {
   Especialidade,
   Profissional,
@@ -190,6 +191,34 @@ class ScheduleViewModel {
         data: dados.data,
         horario: dados.horario,
       });
+
+      // Agenda notificações
+      try {
+        const especialidade = await dataService
+          .buscarEspecialidades()
+          .then((especialidades) =>
+            especialidades.find((e) => e.id === dados.especialidadeId)
+          );
+
+        if (especialidade) {
+          // Notificação de confirmação (imediatamente)
+          await notificationService.agendarConfirmacaoConsulta(
+            dados.data,
+            dados.horario,
+            especialidade.nome
+          );
+
+          // Notificação de lembrete (1 dia antes)
+          await notificationService.agendarLembreteConsulta(
+            dados.data,
+            dados.horario,
+            especialidade.nome
+          );
+        }
+      } catch (error) {
+        // Não falha o agendamento se houver erro nas notificações
+        console.error('Erro ao agendar notificações:', error);
+      }
 
       return {
         success: true,

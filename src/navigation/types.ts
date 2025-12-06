@@ -16,6 +16,10 @@ export type AppStackParamList = {
   Schedule: undefined;
   History: undefined;
   Profile: undefined;
+  News: undefined;
+  Pharmacies: undefined;
+  Medications: undefined;
+  EditProfile: undefined;
 };
 
 /**
