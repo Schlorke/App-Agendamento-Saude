@@ -18,6 +18,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **README.md - Diagrama de Arquitetura**: Substituído diagrama ASCII por diagrama Mermaid profissional e visual para melhor representação da arquitetura MVVM
+- **DESIGN_SYSTEM.md**: Expandido com seção detalhada de animações, exemplos de implementação, microinterações e referências aos novos documentos
+- **AGENTS.md**: Adicionadas seções sobre design system, sistema de contexto para IA, referências rápidas e checklist expandido
+- **Button.tsx**: Adicionada animação de scale ao pressionar usando sistema de animações
+- **Input.tsx**: Implementada animação de foco com transição suave da cor da borda
+- **Card.tsx**: Adicionadas variantes visuais e suporte a animação quando clicável
+- **Loading.tsx**: Adicionada animação de pulso no texto da mensagem
+- **HomeScreen.tsx**: Refatorada para usar Card component e animações de entrada
+- **HistoryScreen.tsx**: Refatorada para usar Badge, EmptyState e Skeleton components
+- **NewsScreen.tsx**: Refatorada para usar Skeleton e EmptyState ao invés de Loading genérico
+- **MedicationsScreen.tsx**: Refatorada para usar Skeleton e EmptyState ao invés de Loading genérico
+- **.eslintrc.json**: Desabilitada regra `react-hooks/refs` que gerava falsos positivos para o padrão válido `useRef(...).current`
 
 ### Fixed
 
@@ -69,20 +80,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **HistoryScreen**: Melhorada com Badge component para status, EmptyState padronizado, Skeleton loading e melhor organização visual
 - **NewsScreen**: Melhorada com Skeleton loading e EmptyState padronizado
 - **MedicationsScreen**: Melhorada com Skeleton loading e EmptyState padronizado
-
-### Changed
-
-- **DESIGN_SYSTEM.md**: Expandido com seção detalhada de animações, exemplos de implementação, microinterações e referências aos novos documentos
-- **AGENTS.md**: Adicionadas seções sobre design system, sistema de contexto para IA, referências rápidas e checklist expandido
-- **Button.tsx**: Adicionada animação de scale ao pressionar usando sistema de animações
-- **Input.tsx**: Implementada animação de foco com transição suave da cor da borda
-- **Card.tsx**: Adicionadas variantes visuais e suporte a animação quando clicável
-- **Loading.tsx**: Adicionada animação de pulso no texto da mensagem
-- **HomeScreen.tsx**: Refatorada para usar Card component e animações de entrada
-- **HistoryScreen.tsx**: Refatorada para usar Badge, EmptyState e Skeleton components
-- **NewsScreen.tsx**: Refatorada para usar Skeleton e EmptyState ao invés de Loading genérico
-- **MedicationsScreen.tsx**: Refatorada para usar Skeleton e EmptyState ao invés de Loading genérico
-- **.eslintrc.json**: Desabilitada regra `react-hooks/refs` que gerava falsos positivos para o padrão válido `useRef(...).current`
 
 #### Correções de Linting
 
