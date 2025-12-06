@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
+import { AlertTriangle } from 'lucide-react-native';
 import { useAuth } from '../../hooks/useAuth';
 import dataService from '../../services/dataService';
 import CancelAppointmentViewModel from '../../viewmodels/CancelAppointmentViewModel';
@@ -15,6 +15,8 @@ import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import EmptyState from '../../components/EmptyState';
 import Skeleton from '../../components/Skeleton';
+import Toast from '../../components/Toast';
+import Modal from '../../components/Modal';
 import { theme } from '../../styles/theme';
 import type { AppScreenProps } from '../../navigation/types';
 import type { Consulta, Profissional } from '../../services/dataService';
@@ -39,6 +41,9 @@ import db from '../../data/db.json';
  * @changelog
  *   - 2024-01-15 - IA - Adicionado bloco de documentação JSDoc completo.
  *   - 2025-12-06 - IA - Adicionadas labels e hints de acessibilidade nos filtros de histórico.
+ *   - 2025-12-06 - IA - Corrigido cancelamento de consultas: substituído Alert.alert por Toast, adicionados logs de debug, corrigida criação de nova referência do objeto ao cancelar para garantir que React detecte mudanças. Agora o cancelamento persiste corretamente e a lista é recarregada automaticamente.
+ *   - 2025-12-06 - IA - Corrigido problema crítico de cancelamento: substituído Alert.alert (que não funciona bem na web) por Modal customizado do design system. Agora o modal de confirmação aparece corretamente e a consulta cancelada é removida imediatamente da lista quando o filtro está em "agendadas", garantindo feedback visual instantâneo.
+ *   - 2025-12-06 - IA - Ajustado modal de cancelamento: removida borda vermelha no topo e simplificados textos dos botões para "Não" e "Sim".
  */
 const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
   const { usuario } = useAuth();
@@ -46,8 +51,21 @@ const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState<
     'todas' | 'agendadas' | 'realizadas' | 'canceladas'
-  >('todas');
+  >('agendadas');
   const [cancelandoId, setCancelandoId] = useState<string | null>(null);
+  const [forceUpdate, setForceUpdate] = useState(0);
+
+  // Estado para Modal de confirmação
+  const [modalCancelarVisible, setModalCancelarVisible] = useState(false);
+  const [consultaParaCancelar, setConsultaParaCancelar] =
+    useState<Consulta | null>(null);
+
+  // Estado para Toast
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<
+    'success' | 'error' | 'warning' | 'info'
+  >('info');
 
   const cancelViewModel = new CancelAppointmentViewModel();
 
@@ -65,6 +83,14 @@ const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usuario]);
 
+  // Debug: monitora mudanças no estado do modal
+  useEffect(() => {
+    console.log('🔍 Estado do modal mudou:', {
+      modalCancelarVisible,
+      consultaParaCancelar: consultaParaCancelar?.id,
+    });
+  }, [modalCancelarVisible, consultaParaCancelar]);
+
   const carregarConsultas = async () => {
     if (!usuario) return;
 
@@ -72,6 +98,11 @@ const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
       setLoading(true);
       const consultasDoUsuario = await dataService.buscarConsultasPorUsuario(
         usuario.id
+      );
+      console.log('Consultas carregadas:', consultasDoUsuario);
+      console.log(
+        'Consultas agendadas:',
+        consultasDoUsuario.filter((c) => c.status === 'agendada')
       );
       setConsultas(consultasDoUsuario);
     } catch (error) {
@@ -81,19 +112,32 @@ const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
     }
   };
 
-  const consultasFiltradas = consultas.filter((consulta) => {
-    if (filtro === 'todas') return true;
-    // Mapear filtros (plural) para status (singular)
-    const statusMap: Record<
-      'agendadas' | 'realizadas' | 'canceladas',
-      'agendada' | 'realizada' | 'cancelada'
-    > = {
-      agendadas: 'agendada',
-      realizadas: 'realizada',
-      canceladas: 'cancelada',
-    };
-    return consulta.status === statusMap[filtro as keyof typeof statusMap];
-  });
+  const consultasFiltradas = useMemo(() => {
+    console.log('🔄 Recalculando filtro. Total consultas:', consultas.length);
+    console.log('Filtro ativo:', filtro);
+    console.log('Force update:', forceUpdate);
+    const filtradas = consultas.filter((consulta) => {
+      if (filtro === 'todas') return true;
+      // Mapear filtros (plural) para status (singular)
+      const statusMap: Record<
+        'agendadas' | 'realizadas' | 'canceladas',
+        'agendada' | 'realizada' | 'cancelada'
+      > = {
+        agendadas: 'agendada',
+        realizadas: 'realizada',
+        canceladas: 'cancelada',
+      };
+      const statusEsperado = statusMap[filtro as keyof typeof statusMap];
+      const resultado = consulta.status === statusEsperado;
+      return resultado;
+    });
+    console.log('✅ Consultas filtradas:', filtradas.length);
+    console.log(
+      '✅ IDs das consultas filtradas:',
+      filtradas.map((c) => c.id)
+    );
+    return filtradas;
+  }, [consultas, filtro, forceUpdate]);
 
   const formatarData = (data: string) => {
     const date = new Date(data);
@@ -129,43 +173,82 @@ const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
   };
 
   const handleCancelarConsulta = (consulta: Consulta) => {
-    Alert.alert(
-      'Cancelar Consulta',
-      `Tem certeza que deseja cancelar a consulta do dia ${formatarData(consulta.data)} às ${consulta.horario}?`,
-      [
-        {
-          text: 'Não',
-          style: 'cancel',
-        },
-        {
-          text: 'Sim, cancelar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setCancelandoId(consulta.id);
-              const resultado = await cancelViewModel.cancelarConsulta(
-                consulta.id
-              );
+    console.log('🔴 BOTÃO CANCELAR CLICADO!');
+    console.log('Consulta:', consulta);
+    console.log('ID:', consulta.id);
+    console.log('Status:', consulta.status);
+    console.log('cancelandoId:', cancelandoId);
 
-              if (resultado.success) {
-                Alert.alert('Sucesso', 'Consulta cancelada com sucesso!');
-                // Recarrega a lista
-                await carregarConsultas();
-              } else {
-                Alert.alert(
-                  'Erro',
-                  resultado.error || 'Não foi possível cancelar a consulta'
-                );
-              }
-            } catch {
-              Alert.alert('Erro', 'Ocorreu um erro ao cancelar a consulta');
-            } finally {
-              setCancelandoId(null);
-            }
-          },
-        },
-      ]
-    );
+    // Verifica se já está cancelando outra consulta
+    if (cancelandoId !== null) {
+      console.log('⚠️ Já está cancelando outra consulta');
+      return;
+    }
+
+    // Abre modal de confirmação
+    console.log('📝 Definindo consulta para cancelar e abrindo modal...');
+    setConsultaParaCancelar(consulta);
+    setModalCancelarVisible(true);
+    console.log('✅ Modal deve estar visível agora');
+  };
+
+  const confirmarCancelamento = async () => {
+    if (!consultaParaCancelar) return;
+
+    const consulta = consultaParaCancelar;
+    setModalCancelarVisible(false);
+
+    try {
+      setCancelandoId(consulta.id);
+      console.log('=== INICIANDO CANCELAMENTO ===');
+      console.log('ID:', consulta.id);
+      console.log('Dados:', JSON.stringify(consulta, null, 2));
+
+      const resultado = await cancelViewModel.cancelarConsulta(consulta.id);
+
+      console.log('=== RESULTADO ===');
+      console.log('Success:', resultado.success);
+      console.log('Error:', resultado.error);
+      console.log('Consulta:', resultado.consulta);
+
+      if (resultado.success) {
+        console.log('✅ SUCESSO! Consulta cancelada.');
+
+        // Atualiza a consulta na lista localmente primeiro para feedback imediato
+        setConsultas((prevConsultas) => {
+          return prevConsultas.map((c) =>
+            c.id === consulta.id ? { ...c, status: 'cancelada' as const } : c
+          );
+        });
+
+        // Força re-render do filtro
+        setForceUpdate((prev) => prev + 1);
+
+        setToastMessage('Consulta cancelada com sucesso!');
+        setToastType('success');
+        setToastVisible(true);
+
+        // Recarrega do banco após um pequeno delay para garantir sincronização
+        setTimeout(async () => {
+          await carregarConsultas();
+        }, 300);
+      } else {
+        console.error('❌ ERRO:', resultado.error);
+        setToastMessage(
+          resultado.error || 'Não foi possível cancelar a consulta'
+        );
+        setToastType('error');
+        setToastVisible(true);
+      }
+    } catch (error) {
+      console.error('❌ EXCEÇÃO:', error);
+      setToastMessage('Ocorreu um erro ao cancelar a consulta');
+      setToastType('error');
+      setToastVisible(true);
+    } finally {
+      setCancelandoId(null);
+      setConsultaParaCancelar(null);
+    }
   };
 
   if (loading) {
@@ -254,6 +337,16 @@ const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
         style={styles.scrollView}
         contentContainerStyle={styles.content}
       >
+        {/* Toast de Notificação */}
+        <Toast
+          visible={toastVisible}
+          type={toastType}
+          message={toastMessage}
+          position="top"
+          duration={3000}
+          onDismiss={() => setToastVisible(false)}
+        />
+
         {consultasFiltradas.length === 0 ? (
           <EmptyState
             icon="📋"
@@ -292,10 +385,18 @@ const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
                         ? 'Cancelando...'
                         : 'Cancelar'
                     }
-                    onPress={() => handleCancelarConsulta(consulta)}
-                    disabled={cancelandoId !== null}
+                    onPress={() => {
+                      console.log('🔴 BOTÃO PRESSIONADO - Início');
+                      handleCancelarConsulta(consulta);
+                      console.log('🔴 BOTÃO PRESSIONADO - Fim');
+                    }}
+                    disabled={
+                      cancelandoId !== null && cancelandoId !== consulta.id
+                    }
                     variant="outline"
                     style={styles.cancelButton}
+                    accessibilityLabel="Cancelar consulta"
+                    accessibilityHint="Abre modal de confirmação para cancelar esta consulta"
                   />
                 </View>
               )}
@@ -303,6 +404,35 @@ const HistoryScreen: React.FC<AppScreenProps<'History'>> = () => {
           ))
         )}
       </ScrollView>
+
+      {/* Modal de Confirmação de Cancelamento - FORA do ScrollView para garantir z-index correto */}
+      <Modal
+        visible={modalCancelarVisible}
+        variant="alert"
+        title="Cancelar Consulta"
+        message={
+          consultaParaCancelar
+            ? `Tem certeza que deseja cancelar a consulta do dia ${formatarData(consultaParaCancelar.data)} às ${consultaParaCancelar.horario}?`
+            : ''
+        }
+        icon={AlertTriangle}
+        showTopBorder={false}
+        primaryAction={{
+          label: 'Sim',
+          onPress: confirmarCancelamento,
+        }}
+        secondaryAction={{
+          label: 'Não',
+          onPress: () => {
+            setModalCancelarVisible(false);
+            setConsultaParaCancelar(null);
+          },
+        }}
+        onClose={() => {
+          setModalCancelarVisible(false);
+          setConsultaParaCancelar(null);
+        }}
+      />
     </View>
   );
 };

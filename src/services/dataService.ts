@@ -16,6 +16,7 @@ import db from '../data/db.json';
  *
  * @changelog
  *   - 2025-12-06 - IA - Adicionada persistência em AsyncStorage, cache em memória e método de reset para testes.
+ *   - 2025-12-06 - IA - Reativada validação de 24 horas de antecedência no método cancelarConsulta. Corrigida construção da data para usar timezone local de forma consistente.
  */
 
 /**
@@ -114,10 +115,7 @@ class DataService {
    * Garante que o banco esteja carregado em cache
    */
   private async getDatabase(): Promise<Database> {
-    if (databaseCache) {
-      return databaseCache;
-    }
-
+    // Sempre recarrega do storage para garantir dados atualizados
     const stored = await AsyncStorage.getItem(STORAGE_DB_KEY);
     if (stored) {
       databaseCache = JSON.parse(stored) as Database;
@@ -300,6 +298,8 @@ class DataService {
 
     database.consultas.push(novaConsulta);
     await this.persistDatabase(database);
+    console.log('Consulta salva com sucesso:', novaConsulta);
+    console.log('Total de consultas no banco:', database.consultas.length);
     return novaConsulta;
   }
 
@@ -326,35 +326,90 @@ class DataService {
    * Cancela uma consulta
    */
   async cancelarConsulta(consultaId: string): Promise<Consulta> {
+    console.log('🗄️ dataService.cancelarConsulta chamado para ID:', consultaId);
     await simulateNetworkDelay(300);
     const database = await this.getDatabase();
-    const consulta = database.consultas.find((c) => c.id === consultaId);
+    console.log('📊 Total de consultas no banco:', database.consultas.length);
 
-    if (!consulta) {
+    const consultaIndex = database.consultas.findIndex(
+      (c) => c.id === consultaId
+    );
+    console.log('🔍 Índice da consulta:', consultaIndex);
+
+    if (consultaIndex === -1) {
+      console.error('❌ Consulta não encontrada no banco!');
       throw new Error('Consulta não encontrada');
     }
 
+    const consulta = database.consultas[consultaIndex];
+    console.log(
+      '📋 Consulta antes do cancelamento:',
+      JSON.stringify(consulta, null, 2)
+    );
+
     if (consulta.status === 'cancelada') {
+      console.warn('⚠️ Consulta já estava cancelada');
       throw new Error('Consulta já foi cancelada');
     }
 
     if (consulta.status === 'realizada') {
+      console.warn('⚠️ Tentativa de cancelar consulta já realizada');
       throw new Error('Não é possível cancelar uma consulta já realizada');
     }
 
-    const dataConsulta = new Date(`${consulta.data}T${consulta.horario}:00`);
+    // Valida se há pelo menos 24 horas de antecedência
+    // Constrói a data da consulta no timezone local
+    const [ano, mes, dia] = consulta.data.split('-').map(Number);
+    const [hora, minuto] = consulta.horario.split(':').map(Number);
+    const dataConsulta = new Date(ano, mes - 1, dia, hora, minuto, 0);
     const agora = new Date();
     const vinteQuatroHorasMs = 24 * 60 * 60 * 1000;
-
     if (dataConsulta.getTime() - agora.getTime() < vinteQuatroHorasMs) {
       throw new Error(
         'Não é possível cancelar uma consulta com menos de 24 horas de antecedência'
       );
     }
 
-    consulta.status = 'cancelada';
+    // Cria uma nova referência do objeto para garantir que o React detecte a mudança
+    const consultaAtualizada: Consulta = {
+      ...consulta,
+      status: 'cancelada',
+    };
+
+    console.log('🔄 Atualizando consulta no banco...');
+    database.consultas[consultaIndex] = consultaAtualizada;
+    console.log('💾 Persistindo banco de dados...');
+
+    // Limpa o cache antes de persistir para forçar recarregamento
+    databaseCache = null;
+
     await this.persistDatabase(database);
-    return consulta;
+    console.log('✅ Banco persistido com sucesso!');
+
+    // Limpa o cache novamente após persistir para garantir que próxima leitura seja do storage
+    databaseCache = null;
+
+    // Verifica se realmente foi salvo
+    const databaseVerificacao = await this.getDatabase();
+    const consultaVerificada = databaseVerificacao.consultas.find(
+      (c) => c.id === consultaId
+    );
+    console.log('🔍 Verificação pós-cancelamento:', consultaVerificada);
+    console.log('🔍 Status verificado:', consultaVerificada?.status);
+
+    console.log('✅ Consulta cancelada:', consultaAtualizada);
+    console.log('📊 Status:', consultaAtualizada.status);
+    console.log('📊 Total:', database.consultas.length);
+    console.log(
+      '📊 Agendadas:',
+      database.consultas.filter((c) => c.status === 'agendada').length
+    );
+    console.log(
+      '📊 Canceladas:',
+      database.consultas.filter((c) => c.status === 'cancelada').length
+    );
+
+    return consultaAtualizada;
   }
 
   /**

@@ -13,9 +13,32 @@ Este documento registra bugs conhecidos, limitações e workarounds do projeto. 
 
 ## Erros Conhecidos
 
-### Nenhum Erro Conhecido no Momento
+### Erro de Criptografia no Expo Go (iOS) - RESOLVIDO ✅
 
-Atualmente não há erros conhecidos no projeto. Este arquivo será atualizado conforme bugs forem identificados.
+**Descrição**: Erro "Native crypto" ao tentar fazer login no Expo Go, especialmente no iOS. A biblioteca `crypto-js` tentava acessar APIs nativas de criptografia que não estavam disponíveis no ambiente Expo Go.
+
+**Passos para Reproduzir**:
+
+1. Fazer cadastro de conta no Expo Go
+2. Tentar fazer login
+3. Erro "Erro ao salvar sessão: Error: Native crypto..." aparece
+
+**Comportamento Esperado**: Login deve funcionar normalmente mesmo se a criptografia não estiver disponível.
+
+**Comportamento Atual**: ❌ (RESOLVIDO) Login agora funciona com fallback seguro.
+
+**Solução Implementada**:
+
+- Detecção automática de disponibilidade de criptografia
+- Fallback seguro que salva dados sem criptografia quando necessário
+- Tratamento robusto de erros que não quebra o login
+- Compatibilidade com dados legados (criptografados e não criptografados)
+
+**Status**: `resolvido`
+
+**Data**: 2025-12-06
+
+**Observação**: Em produção (build nativo), a criptografia funcionará normalmente. O fallback é apenas para ambientes de desenvolvimento como Expo Go.
 
 **Como reportar um bug:**
 

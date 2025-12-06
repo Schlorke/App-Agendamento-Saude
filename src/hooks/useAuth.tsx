@@ -28,6 +28,7 @@ import type { Usuario } from '../services/dataService';
  * @changelog
  *   - 2025-12-06 - IA - Convertido para Context API com provider global e persistência para Web/Expo.
  *   - 2025-12-06 - IA - Corrigido useMemo para usar useCallback nas funções e garantir atualização correta do contexto.
+ *   - 2025-12-06 - IA - Melhorado tratamento de erros no método login para não quebrar autenticação quando storage falha.
  */
 
 interface AuthContextValue {
@@ -72,10 +73,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const login = useCallback(async (usuarioData: Usuario) => {
-    await storageService.salvarSessao(usuarioData.id);
-    await storageService.salvarDadosUsuario(usuarioData);
-    setUsuario(usuarioData);
-    setIsAuthenticated(true);
+    try {
+      // Tenta salvar a sessão, mas não impede o login se falhar
+      await storageService.salvarSessao(usuarioData.id).catch((error) => {
+        console.error('Erro ao salvar sessão (login continuará):', error);
+      });
+      await storageService.salvarDadosUsuario(usuarioData).catch((error) => {
+        console.error(
+          'Erro ao salvar dados do usuário (login continuará):',
+          error
+        );
+      });
+    } catch (error) {
+      // Log do erro mas não impede o login
+      console.error(
+        'Erro ao salvar dados de sessão (login continuará):',
+        error
+      );
+    } finally {
+      // Sempre atualiza o estado mesmo se houver erro no storage
+      setUsuario(usuarioData);
+      setIsAuthenticated(true);
+    }
   }, []);
 
   const logout = useCallback(async () => {

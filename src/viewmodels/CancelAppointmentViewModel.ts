@@ -12,7 +12,21 @@ export interface CancelamentoResult {
 }
 
 /**
- * ViewModel para gerenciar lógica de cancelamento de consulta
+ * @component CancelAppointmentViewModel
+ * @description ViewModel para gerenciar lógica de cancelamento de consulta, incluindo validação de 24 horas de antecedência.
+ *
+ * @props
+ *   - Nenhuma prop. Classe singleton para uso nas telas.
+ *
+ * @state
+ *   - `_loading`: {boolean} - Indica se há uma operação em andamento.
+ *   - `_error`: {string | null} - Mensagem de erro atual, se houver.
+ *
+ * @known_issues
+ *   - Nenhum problema conhecido.
+ *
+ * @changelog
+ *   - 2025-12-06 - IA - Reativada validação de 24 horas de antecedência para cancelamento de consultas. Corrigida construção da data para usar timezone local de forma consistente.
  */
 class CancelAppointmentViewModel {
   private _loading: boolean = false;
@@ -55,7 +69,10 @@ class CancelAppointmentViewModel {
     error?: string;
   } {
     const agora = new Date();
-    const dataConsulta = new Date(`${consulta.data}T${consulta.horario}:00`);
+    // Constrói a data da consulta no timezone local
+    const [ano, mes, dia] = consulta.data.split('-').map(Number);
+    const [hora, minuto] = consulta.horario.split(':').map(Number);
+    const dataConsulta = new Date(ano, mes - 1, dia, hora, minuto, 0);
 
     // Calcula a diferença em milissegundos
     const diferencaMs = dataConsulta.getTime() - agora.getTime();
@@ -83,16 +100,21 @@ class CancelAppointmentViewModel {
       this._error = null;
 
       // Busca a consulta primeiro para validar
+      console.log('🔍 Buscando consulta com ID:', consultaId);
       const consulta = await dataService.buscarConsultaPorId(consultaId);
+      console.log('📋 Consulta encontrada:', consulta);
 
       if (!consulta) {
+        console.error('❌ Consulta não encontrada!');
         return {
           success: false,
           error: 'Consulta não encontrada',
         };
       }
 
-      // Valida se há pelo menos 24h de antecedência
+      console.log('✅ Consulta encontrada. Status:', consulta.status);
+
+      // Valida se há pelo menos 24 horas de antecedência
       const validacao = this.validarAntecedencia24h(consulta);
       if (!validacao.isValid) {
         return {
@@ -102,7 +124,9 @@ class CancelAppointmentViewModel {
       }
 
       // Cancela a consulta
+      console.log('Chamando dataService.cancelarConsulta para:', consultaId);
       const consultaCancelada = await dataService.cancelarConsulta(consultaId);
+      console.log('Consulta cancelada retornada:', consultaCancelada);
 
       // Cancela notificações relacionadas à consulta
       try {

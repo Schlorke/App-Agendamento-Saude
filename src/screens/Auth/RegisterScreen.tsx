@@ -1,5 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Platform } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Platform,
+  KeyboardAvoidingView,
+} from 'react-native';
 import RegisterViewModel from '../../viewmodels/RegisterViewModel';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
@@ -39,6 +46,7 @@ import type { AuthScreenProps } from '../../navigation/types';
  *   - 2025-12-06 - IA - Corrigido loop infinito de atualizações ao digitar no campo nome. `onDismiss` do Toast agora usa `useCallback` para estabilizar a função.
  *   - 2025-12-06 - IA - Removida validação de dígitos verificadores. Agora aceita qualquer CPF com 11 dígitos.
  *   - 2025-12-06 - IA - Removido login automático após cadastro. Agora redireciona para tela de login após cadastro bem-sucedido.
+ *   - 2025-12-06 - IA - Adicionado KeyboardAvoidingView e scroll automático ao focar no campo de confirmação de senha. Garante que o input fique sempre visível acima do teclado.
  */
 const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
   navigation,
@@ -69,6 +77,7 @@ const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
   });
 
   const viewModel = new RegisterViewModel();
+  const scrollViewRef = useRef<ScrollView>(null);
 
   // Fix para scroll na web - aplica estilos CSS diretamente
   useEffect(() => {
@@ -264,10 +273,32 @@ const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
     setToast((prev) => ({ ...prev, visible: false }));
   }, []);
 
+  /**
+   * Rola o ScrollView quando o campo de confirmação de senha é focado
+   * Garante que o input fique visível acima do teclado
+   */
+  const handleConfirmarSenhaFocus = useCallback(() => {
+    // Aguarda o teclado aparecer antes de rolar
+    setTimeout(
+      () => {
+        if (scrollViewRef.current) {
+          // Rola até o final do ScrollView para garantir que o input fique visível
+          scrollViewRef.current.scrollToEnd({ animated: true });
+        }
+      },
+      Platform.OS === 'ios' ? 300 : 100
+    );
+  }, []);
+
   return (
-    <>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+    >
       <ScrollView
-        style={styles.container}
+        ref={scrollViewRef}
+        style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={true}
@@ -275,6 +306,7 @@ const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
         alwaysBounceVertical={false}
         bounces={false}
         scrollEventThrottle={16}
+        keyboardDismissMode="on-drag"
       >
         <View style={styles.content}>
           <Text style={styles.title}>Criar Conta</Text>
@@ -347,6 +379,7 @@ const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
               error={confirmarSenhaError}
               secureTextEntry
               autoCapitalize="none"
+              onFocus={handleConfirmarSenhaFocus}
             />
 
             <Button
@@ -376,7 +409,7 @@ const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
         duration={3000}
         onDismiss={handleToastDismiss}
       />
-    </>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -389,9 +422,12 @@ const styles = StyleSheet.create({
       height: '100%',
     }),
   },
+  scrollView: {
+    flex: 1,
+  },
   scrollContent: {
     padding: theme.spacing.lg,
-    paddingBottom: theme.spacing.xl * 2,
+    paddingBottom: theme.spacing.xl * 3, // Mais padding para garantir espaço acima do teclado
   },
   content: {
     width: '100%',

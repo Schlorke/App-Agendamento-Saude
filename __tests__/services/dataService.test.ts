@@ -2,6 +2,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import dataService from '../../src/services/dataService';
 
 describe('dataService.cancelarConsulta', () => {
+  const formatData = (date: Date): string => {
+    const ano = date.getFullYear();
+    const mes = String(date.getMonth() + 1).padStart(2, '0');
+    const dia = String(date.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  };
+
   const formatHorario = (date: Date): string => {
     return `${String(date.getHours()).padStart(2, '0')}:${String(
       date.getMinutes()
@@ -16,7 +23,7 @@ describe('dataService.cancelarConsulta', () => {
       usuarioId: '1',
       especialidadeId: '1',
       profissionalId: '1',
-      data: alvo.toISOString().split('T')[0],
+      data: formatData(alvo),
       horario: formatHorario(alvo),
     });
   };
