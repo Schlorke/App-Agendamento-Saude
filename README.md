@@ -320,20 +320,20 @@ Este projeto utiliza a arquitetura **MVVM (Model-View-ViewModel)** para garantir
 
 ```mermaid
 graph TB
-    subgraph VIEW["🎨 VIEW<br/>Telas e Componentes"]
+    subgraph VIEW["🎨 VIEW"]
         V1["• Renderiza UI"]
         V2["• Captura interações<br/>do usuário"]
         V3["• Exibe estados<br/>loading, erro, sucesso"]
     end
 
-    subgraph VIEWMODEL["⚙️ VIEWMODEL<br/>Lógica de Apresentação"]
+    subgraph VIEWMODEL["⚙️ VIEWMODEL"]
         VM1["• Gerencia estado da UI"]
         VM2["• Processa ações<br/>do usuário"]
         VM3["• Validações de formulário"]
         VM4["• Transforma dados<br/>para exibição"]
     end
 
-    subgraph MODEL["💾 MODEL<br/>Services"]
+    subgraph MODEL["💾 MODEL"]
         M1["• Acesso a dados<br/>API, banco, storage"]
         M2["• Lógica de negócio"]
         M3["• Transformações de dados"]
