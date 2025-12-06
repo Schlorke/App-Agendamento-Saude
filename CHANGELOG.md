@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Índice de Documentação**: Criado `docs/README.md` como índice central de toda a documentação do projeto, com navegação rápida, busca por tópicos e checklist de documentação
 - **Organização de Documentação**: Melhorada organização da documentação com categorização clara (Arquitetura, Design, Acessibilidade, Troubleshooting) e guias específicos por perfil (Desenvolvedores, Designers, Agentes de IA)
 
+### Changed
+
+- **README.md - Diagrama de Arquitetura**: Substituído diagrama ASCII por diagrama Mermaid profissional e visual para melhor representação da arquitetura MVVM
+
 ### Fixed
 
 - **TypeScript Errors**: Corrigidos erros de tipo no Input.tsx para compatibilidade com React Native 0.81.5 (onFocus/onBlur handlers)

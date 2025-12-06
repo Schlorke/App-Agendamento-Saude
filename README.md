@@ -318,35 +318,35 @@ Este projeto utiliza a arquitetura **MVVM (Model-View-ViewModel)** para garantir
 
 ### Visão Geral
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                         VIEW                             │
-│  (Telas e Componentes - Apenas apresentação)            │
-│  • Renderiza UI                                          │
-│  • Captura interações do usuário                        │
-│  • Exibe estados (loading, erro, sucesso)               │
-└────────────────────┬────────────────────────────────────┘
-                     │
-                     │ Chama métodos
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│                      VIEWMODEL                           │
-│  (Lógica de apresentação e estado da UI)                │
-│  • Gerencia estado da UI                                │
-│  • Processa ações do usuário                            │
-│  • Validações de formulário                            │
-│  • Transforma dados para exibição                       │
-└────────────────────┬────────────────────────────────────┘
-                     │
-                     │ Chama métodos
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│                        MODEL                             │
-│  (Services - Lógica de negócio e acesso a dados)       │
-│  • Acesso a dados (API, banco, storage)                │
-│  • Lógica de negócio                                    │
-│  • Transformações de dados                              │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph VIEW["🎨 VIEW<br/>(Telas e Componentes)"]
+        V1["• Renderiza UI"]
+        V2["• Captura interações<br/>do usuário"]
+        V3["• Exibe estados<br/>(loading, erro, sucesso)"]
+    end
+
+    subgraph VIEWMODEL["⚙️ VIEWMODEL<br/>(Lógica de Apresentação)"]
+        VM1["• Gerencia estado da UI"]
+        VM2["• Processa ações<br/>do usuário"]
+        VM3["• Validações de formulário"]
+        VM4["• Transforma dados<br/>para exibição"]
+    end
+
+    subgraph MODEL["💾 MODEL<br/>(Services)"]
+        M1["• Acesso a dados<br/>(API, banco, storage)"]
+        M2["• Lógica de negócio"]
+        M3["• Transformações de dados"]
+    end
+
+    VIEW -->|"Chama métodos"| VIEWMODEL
+    VIEWMODEL -->|"Chama métodos"| MODEL
+    MODEL -.->|"Retorna dados"| VIEWMODEL
+    VIEWMODEL -.->|"Atualiza estado"| VIEW
+
+    style VIEW fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
+    style VIEWMODEL fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
+    style MODEL fill:#E8F5E9,stroke:#388E3C,stroke-width:2px
 ```
 
 ### Regra de Ouro
