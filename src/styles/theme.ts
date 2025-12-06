@@ -3,6 +3,31 @@
  * Cores e estilos pensados para simplicidade e acessibilidade
  */
 
+import { Platform } from 'react-native';
+
+// Helper para criar sombras compatíveis com web e native
+const createShadow = (
+  shadowColor: string,
+  shadowOffset: { width: number; height: number },
+  shadowOpacity: number,
+  shadowRadius: number,
+  elevation: number
+) => {
+  if (Platform.OS === 'web') {
+    return {
+      boxShadow: `${shadowOffset.width}px ${shadowOffset.height}px ${shadowRadius}px rgba(0, 0, 0, ${shadowOpacity})`,
+      elevation, // Mantém para compatibilidade
+    };
+  }
+  return {
+    shadowColor,
+    shadowOffset,
+    shadowOpacity,
+    shadowRadius,
+    elevation,
+  };
+};
+
 export const theme = {
   colors: {
     primary: '#2E7D32', // Verde saúde
@@ -68,27 +93,9 @@ export const theme = {
     round: 9999,
   },
   shadow: {
-    small: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.18,
-      shadowRadius: 1.0,
-      elevation: 1,
-    },
-    medium: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.23,
-      shadowRadius: 2.62,
-      elevation: 4,
-    },
-    large: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 4.65,
-      elevation: 8,
-    },
+    small: createShadow('#000', { width: 0, height: 1 }, 0.18, 1.0, 1),
+    medium: createShadow('#000', { width: 0, height: 2 }, 0.23, 2.62, 4),
+    large: createShadow('#000', { width: 0, height: 4 }, 0.3, 4.65, 8),
   },
 };
 

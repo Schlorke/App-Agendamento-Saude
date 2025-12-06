@@ -271,6 +271,44 @@ const showToast = (message: string, type: string) => {
 
 ---
 
+## Avisos Esperados no Console (Desenvolvimento Web)
+
+### expo-notifications: Push Token Changes
+
+**Aviso**: `[expo-notifications] Listening to push token changes is not yet fully supported on web. Adding a listener will have no effect.`
+
+**Causa**: Notificações push não são totalmente suportadas na web. O módulo é carregado mesmo quando não será usado.
+
+**Status**: Esperado e inofensivo. O código já verifica a plataforma antes de inicializar notificações (ver `App.tsx` linha 39-41).
+
+**Ação**: Nenhuma ação necessária. Este aviso não afeta a funcionalidade.
+
+### Animated: useNativeDriver
+
+**Aviso**: `Animated: useNativeDriver is not supported because the native animated module is missing. Falling back to JS-based animation.`
+
+**Causa**: O módulo nativo de animação não está disponível na web. React Native Web usa animações JavaScript como fallback.
+
+**Status**: Esperado e inofensivo. As animações funcionam normalmente, apenas usando JavaScript ao invés do driver nativo.
+
+**Ação**: Nenhuma ação necessária. Este aviso não afeta a funcionalidade.
+
+### react-native-web: pointerEvents Deprecated
+
+**Aviso**: `props.pointerEvents is deprecated. Use style.pointerEvents`
+
+**Causa**: Versões antigas de componentes podem ainda usar `pointerEvents` como prop ao invés de estilo.
+
+**Status**:
+
+- ✅ Corrigido em `Toast.tsx` (movendo `pointerEvents` de prop para `style`).
+- ⚠️ Warning ainda aparece no `AuthStack.tsx` (linha 36) mas vem de dentro do `@react-navigation/stack` (componente `HeaderContainer`). Este é um problema interno da biblioteca e não pode ser corrigido diretamente no nosso código.
+
+**Ação**:
+
+- Se aparecer em componentes nossos, mover `pointerEvents` de prop para `style`.
+- O warning do `@react-navigation/stack` será resolvido quando a biblioteca for atualizada. Não há ação necessária do nosso lado.
+
 ## Limitações do Design System
 
 ### Cores

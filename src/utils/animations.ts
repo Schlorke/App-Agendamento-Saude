@@ -8,9 +8,13 @@
  *
  * @changelog
  *   - 2024-01-15 - IA - Criação inicial do sistema de animações.
+ *   - 2025-12-06 - IA - Adicionada verificação de plataforma para useNativeDriver (não suportado na web).
  */
 
-import { Animated, Easing } from 'react-native';
+import { Animated, Easing, Platform } from 'react-native';
+
+// useNativeDriver não é suportado na web para transformações que não sejam opacity/transform
+const canUseNativeDriver = Platform.OS !== 'web';
 
 /**
  * Durações padrão de animação (em milissegundos)
@@ -47,7 +51,7 @@ export const fadeIn = (
     duration,
     delay,
     easing: EASING.easeOut,
-    useNativeDriver: true,
+    useNativeDriver: canUseNativeDriver,
   });
 };
 
@@ -65,7 +69,7 @@ export const fadeOut = (
     toValue: 0,
     duration,
     easing: EASING.easeIn,
-    useNativeDriver: true,
+    useNativeDriver: canUseNativeDriver,
   });
 };
 
@@ -89,7 +93,7 @@ export const slideUp = (
     duration,
     delay,
     easing: EASING.easeOut,
-    useNativeDriver: true,
+    useNativeDriver: canUseNativeDriver,
   });
 };
 
@@ -109,7 +113,7 @@ export const scalePress = (
     toValue: scale,
     duration,
     easing: EASING.easeInOut,
-    useNativeDriver: true,
+    useNativeDriver: canUseNativeDriver,
   });
 };
 
@@ -127,7 +131,7 @@ export const scaleRelease = (
     toValue: 1,
     duration,
     easing: EASING.easeInOut,
-    useNativeDriver: true,
+    useNativeDriver: canUseNativeDriver,
   });
 };
 
@@ -151,13 +155,13 @@ export const pulse = (
         toValue: maxOpacity,
         duration: duration / 2,
         easing: EASING.easeInOut,
-        useNativeDriver: true,
+        useNativeDriver: canUseNativeDriver,
       }),
       Animated.timing(animatedValue, {
         toValue: minOpacity,
         duration: duration / 2,
         easing: EASING.easeInOut,
-        useNativeDriver: true,
+        useNativeDriver: canUseNativeDriver,
       }),
     ])
   );
@@ -181,25 +185,25 @@ export const shake = (
       toValue: distance,
       duration: shakeDuration,
       easing: EASING.easeInOut,
-      useNativeDriver: true,
+      useNativeDriver: canUseNativeDriver,
     }),
     Animated.timing(animatedValue, {
       toValue: -distance,
       duration: shakeDuration * 2,
       easing: EASING.easeInOut,
-      useNativeDriver: true,
+      useNativeDriver: canUseNativeDriver,
     }),
     Animated.timing(animatedValue, {
       toValue: distance,
       duration: shakeDuration * 2,
       easing: EASING.easeInOut,
-      useNativeDriver: true,
+      useNativeDriver: canUseNativeDriver,
     }),
     Animated.timing(animatedValue, {
       toValue: 0,
       duration: shakeDuration,
       easing: EASING.easeInOut,
-      useNativeDriver: true,
+      useNativeDriver: canUseNativeDriver,
     }),
   ]);
   // distance is used in toValue above

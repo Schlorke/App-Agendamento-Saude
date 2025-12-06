@@ -41,10 +41,12 @@ const EmptyState: React.FC<EmptyStateProps> = ({
 }) => {
   return (
     <View style={[styles.container, style]}>
-      {icon && <Text style={styles.icon}>{icon}</Text>}
+      {icon ? <Text style={styles.icon}>{icon}</Text> : null}
       <Text style={styles.title}>{title}</Text>
-      {description && <Text style={styles.description}>{description}</Text>}
-      {action && <View style={styles.actionContainer}>{action}</View>}
+      {description ? (
+        <Text style={styles.description}>{description}</Text>
+      ) : null}
+      {action ? <View style={styles.actionContainer}>{action}</View> : null}
     </View>
   );
 };

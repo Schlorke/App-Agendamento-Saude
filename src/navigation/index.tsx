@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
 import AuthStack from './AuthStack';
 import AppStack from './AppStack';
@@ -35,9 +36,26 @@ const Navigation = () => {
 
   return (
     <NavigationContainer>
-      {isAuthenticated ? <AppStack /> : <AuthStack />}
+      {Platform.OS === 'web' ? (
+        <View style={styles.webContainer}>
+          {isAuthenticated ? <AppStack /> : <AuthStack />}
+        </View>
+      ) : (
+        <>{isAuthenticated ? <AppStack /> : <AuthStack />}</>
+      )}
     </NavigationContainer>
   );
 };
+
+const styles = StyleSheet.create({
+  webContainer: {
+    flex: 1,
+    ...(Platform.OS === 'web' && {
+      height: '100vh' as unknown as number,
+      width: '100%',
+    }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any,
+});
 
 export default Navigation;

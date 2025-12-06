@@ -1,4 +1,22 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import db from '../data/db.json';
+
+/**
+ * @component DataService
+ * @description Serviço responsável por simular o backend com um banco em memória, agora persistido em AsyncStorage (funciona em Expo e Web). Todas as operações de dados passam por aqui para manter o padrão MVVM.
+ *
+ * @props
+ *   - Nenhuma prop. Instância singleton exportada para uso pelos ViewModels.
+ *
+ * @state
+ *   - `databaseCache`: {Database | null} - Cache em memória para evitar re-leituras do storage.
+ *
+ * @known_issues
+ *   - Operações simultâneas em abas diferentes do navegador podem sobrescrever mudanças, pois não há locking.
+ *
+ * @changelog
+ *   - 2025-12-06 - IA - Adicionada persistência em AsyncStorage, cache em memória e método de reset para testes.
+ */
 
 /**
  * Interface para a estrutura do banco de dados JSON
@@ -82,18 +100,91 @@ const simulateNetworkDelay = (ms: number = 500): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+const STORAGE_DB_KEY = '@health_app:database';
+let databaseCache: Database | null = null;
+
+const cloneDatabase = (database: Database): Database =>
+  JSON.parse(JSON.stringify(database));
+
 /**
  * Serviço para acessar dados do mock database
  */
 class DataService {
   /**
+   * Garante que o banco esteja carregado em cache
+   */
+  private async getDatabase(): Promise<Database> {
+    if (databaseCache) {
+      return databaseCache;
+    }
+
+    const stored = await AsyncStorage.getItem(STORAGE_DB_KEY);
+    if (stored) {
+      databaseCache = JSON.parse(stored) as Database;
+      return databaseCache;
+    }
+
+    const initial = cloneDatabase(db as Database);
+    databaseCache = initial;
+    await AsyncStorage.setItem(STORAGE_DB_KEY, JSON.stringify(initial));
+    return initial;
+  }
+
+  /**
+   * Persiste o banco atualizado
+   */
+  private async persistDatabase(database: Database): Promise<void> {
+    databaseCache = database;
+    await AsyncStorage.setItem(STORAGE_DB_KEY, JSON.stringify(database));
+  }
+
+  /**
+   * Reseta o banco para o estado inicial (útil para testes e desenvolvimento)
+   * Remove todos os dados cadastrados e restaura os dados iniciais do db.json
+   */
+  async resetDatabase(): Promise<void> {
+    const initial = cloneDatabase(db as Database);
+    databaseCache = initial;
+    await AsyncStorage.setItem(STORAGE_DB_KEY, JSON.stringify(initial));
+  }
+
+  /**
+   * Limpa completamente o banco de dados (remove todos os dados)
+   * Útil para desenvolvimento e testes
+   */
+  async limparDatabase(): Promise<void> {
+    databaseCache = null;
+    await AsyncStorage.removeItem(STORAGE_DB_KEY);
+  }
+
+  /**
+   * Importa um banco de dados completo (útil para migrar dados entre navegadores)
+   * @param database - Banco de dados a ser importado
+   */
+  async importarDatabase(database: Database): Promise<void> {
+    await this.persistDatabase(database);
+  }
+
+  /**
+   * Exporta o banco de dados atual (útil para backup ou migração)
+   * @returns Banco de dados atual
+   */
+  async exportarDatabase(): Promise<Database> {
+    return await this.getDatabase();
+  }
+
+  /**
    * Busca um usuário por CPF
+   * @param cpf - CPF do usuário (aceita formatado ou não formatado)
+   * @returns Usuário encontrado ou null
    */
   async buscarUsuarioPorCPF(cpf: string): Promise<Usuario | null> {
     await simulateNetworkDelay(300);
-    const database = db as Database;
+    const database = await this.getDatabase();
+    // Limpa formatação de ambos os lados para garantir comparação correta
+    const cpfLimpo = cpf.replace(/\D/g, '');
     const usuario = database.usuarios.find(
-      (u) => u.cpf === cpf.replace(/\D/g, '')
+      (u) => u.cpf.replace(/\D/g, '') === cpfLimpo
     );
     return usuario || null;
   }
@@ -103,7 +194,7 @@ class DataService {
    */
   async buscarUsuarioPorId(id: string): Promise<Usuario | null> {
     await simulateNetworkDelay(200);
-    const database = db as Database;
+    const database = await this.getDatabase();
     const usuario = database.usuarios.find((u) => u.id === id);
     return usuario || null;
   }
@@ -113,23 +204,27 @@ class DataService {
    */
   async criarUsuario(usuario: Omit<Usuario, 'id'>): Promise<Usuario> {
     await simulateNetworkDelay(400);
-    const database = db as Database;
+    const database = await this.getDatabase();
     const novoUsuario: Usuario = {
       ...usuario,
       id: String(database.usuarios.length + 1),
     };
     database.usuarios.push(novoUsuario);
+    await this.persistDatabase(database);
     return novoUsuario;
   }
 
   /**
    * Verifica se um CPF já está cadastrado
+   * @param cpf - CPF a verificar (aceita formatado ou não formatado)
+   * @returns true se o CPF já estiver cadastrado, false caso contrário
    */
   async cpfJaCadastrado(cpf: string): Promise<boolean> {
     await simulateNetworkDelay(200);
-    const database = db as Database;
+    const database = await this.getDatabase();
+    // Limpa formatação de ambos os lados para garantir comparação correta
     const cpfLimpo = cpf.replace(/\D/g, '');
-    return database.usuarios.some((u) => u.cpf === cpfLimpo);
+    return database.usuarios.some((u) => u.cpf.replace(/\D/g, '') === cpfLimpo);
   }
 
   /**
@@ -137,7 +232,7 @@ class DataService {
    */
   async buscarEspecialidades(): Promise<Especialidade[]> {
     await simulateNetworkDelay(300);
-    const database = db as Database;
+    const database = await this.getDatabase();
     return database.especialidades;
   }
 
@@ -148,7 +243,7 @@ class DataService {
     especialidadeId: string
   ): Promise<Profissional[]> {
     await simulateNetworkDelay(300);
-    const database = db as Database;
+    const database = await this.getDatabase();
     return database.profissionais.filter(
       (p) => p.especialidadeId === especialidadeId
     );
@@ -162,7 +257,7 @@ class DataService {
     profissionalId: string
   ): Promise<string[]> {
     await simulateNetworkDelay(400);
-    const database = db as Database;
+    const database = await this.getDatabase();
     const consultasOcupadas = database.consultas.filter(
       (c) =>
         c.data === data &&
@@ -183,7 +278,7 @@ class DataService {
     await simulateNetworkDelay(500);
 
     // Verifica se o horário já está ocupado
-    const database = db as Database;
+    const database = await this.getDatabase();
     const horarioOcupado = database.consultas.some(
       (c) =>
         c.data === consulta.data &&
@@ -204,6 +299,7 @@ class DataService {
     };
 
     database.consultas.push(novaConsulta);
+    await this.persistDatabase(database);
     return novaConsulta;
   }
 
@@ -212,7 +308,7 @@ class DataService {
    */
   async buscarConsultasPorUsuario(usuarioId: string): Promise<Consulta[]> {
     await simulateNetworkDelay(400);
-    const database = db as Database;
+    const database = await this.getDatabase();
     return database.consultas.filter((c) => c.usuarioId === usuarioId);
   }
 
@@ -221,7 +317,7 @@ class DataService {
    */
   async buscarConsultaPorId(consultaId: string): Promise<Consulta | null> {
     await simulateNetworkDelay(200);
-    const database = db as Database;
+    const database = await this.getDatabase();
     const consulta = database.consultas.find((c) => c.id === consultaId);
     return consulta || null;
   }
@@ -231,7 +327,7 @@ class DataService {
    */
   async cancelarConsulta(consultaId: string): Promise<Consulta> {
     await simulateNetworkDelay(300);
-    const database = db as Database;
+    const database = await this.getDatabase();
     const consulta = database.consultas.find((c) => c.id === consultaId);
 
     if (!consulta) {
@@ -257,6 +353,7 @@ class DataService {
     }
 
     consulta.status = 'cancelada';
+    await this.persistDatabase(database);
     return consulta;
   }
 
@@ -268,7 +365,7 @@ class DataService {
     dados: Partial<Omit<Usuario, 'id' | 'cpf' | 'senhaHash'>>
   ): Promise<Usuario> {
     await simulateNetworkDelay(300);
-    const database = db as Database;
+    const database = await this.getDatabase();
     const usuario = database.usuarios.find((u) => u.id === usuarioId);
 
     if (!usuario) {
@@ -276,6 +373,7 @@ class DataService {
     }
 
     Object.assign(usuario, dados);
+    await this.persistDatabase(database);
     return usuario;
   }
 
@@ -284,7 +382,7 @@ class DataService {
    */
   async buscarNoticias(): Promise<Noticia[]> {
     await simulateNetworkDelay(300);
-    const database = db as Database;
+    const database = await this.getDatabase();
     return database.noticias || [];
   }
 
@@ -293,7 +391,7 @@ class DataService {
    */
   async buscarFarmacias(): Promise<Farmacia[]> {
     await simulateNetworkDelay(300);
-    const database = db as Database;
+    const database = await this.getDatabase();
     return database.farmacias || [];
   }
 
@@ -302,7 +400,7 @@ class DataService {
    */
   async buscarMedicamentos(): Promise<Medicamento[]> {
     await simulateNetworkDelay(300);
-    const database = db as Database;
+    const database = await this.getDatabase();
     return database.medicamentos || [];
   }
 }

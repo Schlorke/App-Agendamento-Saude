@@ -9,13 +9,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **LoginViewModel**: Adicionados logs de debug em modo desenvolvimento para diagnosticar problemas de login (usuário não encontrado, senha incorreta).
+- **App.tsx**: Adicionadas funções de debug no console do navegador:
+  - `window.debugUsuario("CPF")`: Verifica se um usuário existe no banco de dados
+  - `window.listarUsuarios()`: Lista todos os usuários cadastrados
+  - `window.exportarDados()`: Exporta todos os dados do banco (útil para migração entre navegadores)
+  - `window.importarDados(JSON)`: Importa dados de outro navegador
+- **dataService.ts**: Adicionados métodos `importarDatabase()` e `exportarDatabase()` para facilitar migração de dados entre navegadores.
+- **lucide-react-native**: Adicionada biblioteca de ícones Lucide para substituir emojis por ícones vetoriais elegantes e consistentes com a identidade visual do projeto.
+
+### Fixed
+
+- **RegisterScreen.tsx**: Corrigido problema de scroll na web removendo `flexGrow: 1` do `scrollContent` na web (que impedia o scroll) e ajustando estrutura do `ScrollView` para permitir scroll correto no navegador.
+- **Navigation/index.tsx**: Adicionados estilos específicos para web no `NavigationContainer` para garantir altura correta e permitir scroll nas telas.
+- **LoginScreen.tsx**: Ajustado `KeyboardAvoidingView` para ser desabilitado na web e melhorados estilos do `ScrollView`.
+- **AppStack.tsx**: Corrigido conflito de nomes na navegação renomeando a tela do Stack Navigator de "Home" para "MainTabs", eliminando o warning "Found screens with the same name nested inside one another" do React Navigation. O Tab Navigator interno ainda mantém a tela "Home" funcionando corretamente.
+
+- **Input.tsx, EmptyState.tsx, Header.tsx**: Corrigido erro "Unexpected text node" no React Native Web substituindo renderização condicional com `&&` por operadores ternários com `null`. Isso garante que valores `undefined` ou `false` não sejam renderizados diretamente como texto dentro de componentes `<View>`.
+- **dataService.ts, App.tsx**: Adicionado método `limparDatabase()` e exposição de métodos de desenvolvimento no console do navegador (`window.resetDatabase()` e `window.limparDatabase()`) para facilitar limpeza de dados durante desenvolvimento.
+- **theme.ts**: Corrigido warning "shadow\* style props are deprecated" adicionando suporte para `boxShadow` na web enquanto mantém compatibilidade com React Native usando `Platform.OS`.
+- **Toast.tsx**: Corrigido warning "props.pointerEvents is deprecated" movendo `pointerEvents` de prop para `style`.
+- **App.tsx**: Corrigido warning do expo-notifications na web usando importação condicional para evitar carregar o módulo em plataformas web onde push tokens não são suportados. Agora o módulo só é carregado em plataformas móveis (iOS/Android).
+- **animations.ts, Toast.tsx**: Adicionada verificação de plataforma para `useNativeDriver` (não suportado na web), eliminando warnings do Animated.
+- **LoginViewModel.ts**: Corrigido tratamento do CPF para sempre limpar formatação antes de buscar usuário no banco de dados, garantindo que CPF formatado e não formatado funcionem corretamente.
+- **RegisterScreen.tsx**: Corrigido envio do CPF ao ViewModel para sempre enviar CPF limpo (sem formatação), garantindo consistência no armazenamento.
+- **LoginScreen.tsx**: Corrigido envio do CPF ao ViewModel para sempre enviar CPF limpo (sem formatação), garantindo consistência na busca.
+- **dataService.ts**: Melhorada comparação de CPF em `buscarUsuarioPorCPF` e `cpfJaCadastrado` para sempre limpar formatação de ambos os lados da comparação, garantindo que CPFs sejam encontrados independentemente da formatação.
+- Corrigido warning relacionado ao bloco duplicado `### Added` detectado na validação CI do CHANGELOG.md.
+
+### Changed
+
+- **src/services/dataService.ts**: Dados agora sao carregados de um cache em memoria e persistidos em AsyncStorage (funciona no Expo e Web), com metodo de reset para testes e inicializacao com o seed de db.json.
+- **src/hooks/useAuth.tsx**, **App.tsx**: useAuth convertido para Context + AuthProvider global, e o app passou a envolver a navegacao com o provider para compartilhar a sessao entre telas e plataformas.
+- **HomeScreen.tsx**: Substituídos emojis por ícones Lucide (Calendar, ClipboardList, Megaphone, Pill, Syringe, UserCircle) com coloração da identidade visual do projeto (verde primário, laranja, vermelho, azul). Melhorado layout dos cards com ícones alinhados ao lado dos títulos.
+- **RegisterScreen.tsx**: Alterado formato de data de nascimento de YYYY-MM-DD para DD/MM/YYYY com formatação automática durante a digitação. Conversão automática para YYYY-MM-DD antes de enviar ao ViewModel.
+- **Input.tsx**: Corrigido alinhamento vertical do placeholder e texto dos inputs. Adicionado suporte específico para campos multiline com alinhamento adequado.
+- **validation.ts**: Melhorada validação de data de nascimento com verificação de datas inválidas (ex: 31/02).
+
+- **LoginViewModel.ts**: Corrigido tratamento do CPF para sempre limpar formatação antes de buscar usuário no banco de dados, garantindo que CPF formatado e não formatado funcionem corretamente.
+- **RegisterScreen.tsx**: Corrigido envio do CPF ao ViewModel para sempre enviar CPF limpo (sem formatação), garantindo consistência no armazenamento.
+- **LoginScreen.tsx**: Corrigido envio do CPF ao ViewModel para sempre enviar CPF limpo (sem formatação), garantindo consistência na busca.
+- **dataService.ts**: Melhorada comparação de CPF em `buscarUsuarioPorCPF` e `cpfJaCadastrado` para sempre limpar formatação de ambos os lados da comparação, garantindo que CPFs sejam encontrados independentemente da formatação.
+
 #### Documentação
 
 - **README.md Profissional**: README.md completamente reestruturado com formato enterprise, incluindo badges, estrutura completa, tabelas organizadas e links para toda a documentação
 - **Índice de Documentação**: Criado `docs/README.md` como índice central de toda a documentação do projeto, com navegação rápida, busca por tópicos e checklist de documentação
 - **Organização de Documentação**: Melhorada organização da documentação com categorização clara (Arquitetura, Design, Acessibilidade, Troubleshooting) e guias específicos por perfil (Desenvolvedores, Designers, Agentes de IA)
-
-### Changed
 
 - **README.md - Diagrama de Arquitetura**: Substituído diagrama ASCII por diagrama Mermaid profissional e visual para melhor representação da arquitetura MVVM
 - **DESIGN_SYSTEM.md**: Expandido com seção detalhada de animações, exemplos de implementação, microinterações e referências aos novos documentos
@@ -30,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **MedicationsScreen.tsx**: Refatorada para usar Skeleton e EmptyState ao invés de Loading genérico
 - **.eslintrc.json**: Desabilitada regra `react-hooks/refs` que gerava falsos positivos para o padrão válido `useRef(...).current`
 
-### Fixed
+<!-- Corrigido warning: bloco duplicado de '### Fixed' removido para evitar conflitos na validação CI. -->
 
 - **TypeScript Errors**: Corrigidos erros de tipo no Input.tsx para compatibilidade com React Native 0.81.5 (onFocus/onBlur handlers)
 - **HistoryScreen**: Corrigido uso de `consulta.profissional` para usar `profissionalId` com mapa de profissionais

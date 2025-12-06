@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  KeyboardAvoidingView,
   Platform,
   Alert,
 } from 'react-native';
@@ -43,6 +42,7 @@ import type { AuthScreenProps } from '../../navigation/types';
  *
  * @changelog
  *   - 2024-01-15 - IA - Adicionado bloco de documentação JSDoc completo.
+ *   - 2025-12-06 - IA - Alterado formato de data de nascimento para DD/MM/YYYY com formatação automática e conversão para YYYY-MM-DD antes de enviar ao ViewModel.
  */
 const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
   navigation,
@@ -66,6 +66,37 @@ const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
   const { login: loginAuth } = useAuth();
   const viewModel = new RegisterViewModel();
 
+  // Fix para scroll na web - aplica estilos CSS diretamente
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      // Aplica estilos globais para garantir scroll
+      const style = document.createElement('style');
+      style.textContent = `
+        body {
+          overflow: hidden !important;
+        }
+        #root > div {
+          height: 100vh !important;
+          overflow: hidden !important;
+        }
+        [data-testid="scroll-view"],
+        div[style*="overflow"] {
+          overflow-y: auto !important;
+          overflow-x: hidden !important;
+          height: 100% !important;
+          -webkit-overflow-scrolling: touch !important;
+        }
+      `;
+      document.head.appendChild(style);
+
+      return () => {
+        if (document.head.contains(style)) {
+          document.head.removeChild(style);
+        }
+      };
+    }
+  }, []);
+
   /**
    * Valida e formata o CPF enquanto o usuário digita
    */
@@ -83,16 +114,16 @@ const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
   };
 
   /**
-   * Formata data de nascimento enquanto o usuário digita (YYYY-MM-DD)
+   * Formata data de nascimento enquanto o usuário digita (DD/MM/YYYY)
    */
   const handleDataChange = (text: string) => {
     const apenasNumeros = text.replace(/\D/g, '');
 
     let formatado = apenasNumeros;
-    if (apenasNumeros.length >= 8) {
-      formatado = `${apenasNumeros.slice(0, 4)}-${apenasNumeros.slice(4, 6)}-${apenasNumeros.slice(6, 8)}`;
-    } else if (apenasNumeros.length >= 6) {
-      formatado = `${apenasNumeros.slice(0, 4)}-${apenasNumeros.slice(4)}`;
+    if (apenasNumeros.length >= 5) {
+      formatado = `${apenasNumeros.slice(0, 2)}/${apenasNumeros.slice(2, 4)}/${apenasNumeros.slice(4, 8)}`;
+    } else if (apenasNumeros.length >= 3) {
+      formatado = `${apenasNumeros.slice(0, 2)}/${apenasNumeros.slice(2)}`;
     }
 
     if (formatado.length <= 10) {
@@ -128,6 +159,19 @@ const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
       return;
     }
 
+    // Converte DD/MM/YYYY para YYYY-MM-DD
+    const partesData = dataNascimento.split('/');
+    if (
+      partesData.length !== 3 ||
+      partesData[0].length !== 2 ||
+      partesData[1].length !== 2 ||
+      partesData[2].length !== 4
+    ) {
+      setDataError('Data de nascimento inválida');
+      return;
+    }
+    const dataFormatada = `${partesData[2]}-${partesData[1]}-${partesData[0]}`;
+
     if (!senha || senha.length < 6) {
       setSenhaError('Senha deve ter pelo menos 6 caracteres');
       return;
@@ -141,10 +185,13 @@ const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
     setLoading(true);
 
     try {
+      // Limpa o CPF antes de enviar ao ViewModel
+      const cpfLimpo = cpf.replace(/\D/g, '');
+
       const resultado = await viewModel.cadastrar({
         nome,
-        cpf,
-        dataNascimento,
+        cpf: cpfLimpo,
+        dataNascimento: dataFormatada,
         senha,
         telefone: telefone || undefined,
         endereco: endereco || undefined,
@@ -195,105 +242,104 @@ const RegisterScreen: React.FC<AuthScreenProps<'Register'>> = ({
   };
 
   return (
-    <KeyboardAvoidingView
+    <ScrollView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      contentContainerStyle={styles.scrollContent}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={true}
+      nestedScrollEnabled={true}
+      alwaysBounceVertical={false}
+      bounces={false}
+      scrollEventThrottle={16}
     >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.content}>
-          <Text style={styles.title}>Criar Conta</Text>
-          <Text style={styles.subtitle}>
-            Preencha os dados para se cadastrar
-          </Text>
+      <View style={styles.content}>
+        <Text style={styles.title}>Criar Conta</Text>
+        <Text style={styles.subtitle}>Preencha os dados para se cadastrar</Text>
 
-          <View style={styles.form}>
-            <Input
-              label="Nome Completo *"
-              placeholder="Digite seu nome completo"
-              value={nome}
-              onChangeText={setNome}
-              error={nomeError}
-              autoCapitalize="words"
-            />
+        <View style={styles.form}>
+          <Input
+            label="Nome Completo *"
+            placeholder="Digite seu nome completo"
+            value={nome}
+            onChangeText={setNome}
+            error={nomeError}
+            autoCapitalize="words"
+          />
 
-            <Input
-              label="CPF *"
-              placeholder="000.000.000-00"
-              value={cpf}
-              onChangeText={handleCpfChange}
-              error={cpfError}
-              keyboardType="numeric"
-              maxLength={14}
-            />
+          <Input
+            label="CPF *"
+            placeholder="000.000.000-00"
+            value={cpf}
+            onChangeText={handleCpfChange}
+            error={cpfError}
+            keyboardType="numeric"
+            maxLength={14}
+          />
 
-            <Input
-              label="Data de Nascimento *"
-              placeholder="YYYY-MM-DD"
-              value={dataNascimento}
-              onChangeText={handleDataChange}
-              error={dataError}
-              keyboardType="numeric"
-              maxLength={10}
-            />
+          <Input
+            label="Data de Nascimento *"
+            placeholder="DD/MM/YYYY"
+            value={dataNascimento}
+            onChangeText={handleDataChange}
+            error={dataError}
+            keyboardType="numeric"
+            maxLength={10}
+          />
 
-            <Input
-              label="Telefone"
-              placeholder="(00) 00000-0000"
-              value={telefone}
-              onChangeText={setTelefone}
-              keyboardType="phone-pad"
-            />
+          <Input
+            label="Telefone"
+            placeholder="(00) 00000-0000"
+            value={telefone}
+            onChangeText={setTelefone}
+            keyboardType="phone-pad"
+          />
 
-            <Input
-              label="Endereço"
-              placeholder="Rua, número - Cidade, Estado"
-              value={endereco}
-              onChangeText={setEndereco}
-              multiline
-            />
+          <Input
+            label="Endereço"
+            placeholder="Rua, número - Cidade, Estado"
+            value={endereco}
+            onChangeText={setEndereco}
+            multiline
+          />
 
-            <Input
-              label="Senha *"
-              placeholder="Mínimo 6 caracteres"
-              value={senha}
-              onChangeText={setSenha}
-              error={senhaError}
-              secureTextEntry
-              autoCapitalize="none"
-            />
+          <Input
+            label="Senha *"
+            placeholder="Mínimo 6 caracteres"
+            value={senha}
+            onChangeText={setSenha}
+            error={senhaError}
+            secureTextEntry
+            autoCapitalize="none"
+          />
 
-            <Input
-              label="Confirmar Senha *"
-              placeholder="Digite a senha novamente"
-              value={confirmarSenha}
-              onChangeText={setConfirmarSenha}
-              error={confirmarSenhaError}
-              secureTextEntry
-              autoCapitalize="none"
-            />
+          <Input
+            label="Confirmar Senha *"
+            placeholder="Digite a senha novamente"
+            value={confirmarSenha}
+            onChangeText={setConfirmarSenha}
+            error={confirmarSenhaError}
+            secureTextEntry
+            autoCapitalize="none"
+          />
 
-            <Button
-              title="Cadastrar"
-              onPress={handleRegister}
-              loading={loading}
-              disabled={loading}
-              fullWidth
-              style={styles.registerButton}
-            />
+          <Button
+            title="Cadastrar"
+            onPress={handleRegister}
+            loading={loading}
+            disabled={loading}
+            fullWidth
+            style={styles.registerButton}
+          />
 
-            <View style={styles.loginContainer}>
-              <Text style={styles.loginText}>Já tem uma conta? </Text>
-              <Text style={styles.loginLink} onPress={handleNavigateToLogin}>
-                Entrar
-              </Text>
-            </View>
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>Já tem uma conta? </Text>
+            <Text style={styles.loginLink} onPress={handleNavigateToLogin}>
+              Entrar
+            </Text>
           </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </View>
+    </ScrollView>
   );
 };
 
@@ -301,10 +347,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+    ...(Platform.OS === 'web' && {
+      position: 'relative',
+      height: '100%',
+    }),
   },
   scrollContent: {
-    flexGrow: 1,
     padding: theme.spacing.lg,
+    paddingBottom: theme.spacing.xl * 2,
   },
   content: {
     width: '100%',

@@ -51,7 +51,7 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <View style={[styles.container, style]}>
       <View style={styles.leftSection}>
-        {showBackButton && onBack && (
+        {showBackButton && onBack ? (
           <TouchableOpacity
             onPress={onBack}
             style={styles.backButton}
@@ -61,13 +61,13 @@ const Header: React.FC<HeaderProps> = ({
           >
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
-        )}
+        ) : null}
         <View style={styles.titleContainer}>
           <Text style={styles.title}>{title}</Text>
-          {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+          {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
         </View>
       </View>
-      {actions && <View style={styles.actionsContainer}>{actions}</View>}
+      {actions ? <View style={styles.actionsContainer}>{actions}</View> : null}
     </View>
   );
 };

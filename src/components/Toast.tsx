@@ -31,9 +31,13 @@ import {
   Animated,
   TouchableOpacity,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import { theme } from '../styles/theme';
 import { fadeIn, fadeOut } from '../utils/animations';
+
+// useNativeDriver não é suportado na web
+const canUseNativeDriver = Platform.OS !== 'web';
 
 export interface ToastProps {
   visible: boolean;
@@ -67,7 +71,7 @@ const Toast: React.FC<ToastProps> = ({
       Animated.timing(translateYAnim, {
         toValue: position === 'top' ? -50 : position === 'bottom' ? 50 : 0,
         duration: 200,
-        useNativeDriver: true,
+        useNativeDriver: canUseNativeDriver,
       }),
     ]).start(() => {
       onDismiss?.();
@@ -87,7 +91,7 @@ const Toast: React.FC<ToastProps> = ({
           toValue: 0,
           tension: 50,
           friction: 7,
-          useNativeDriver: true,
+          useNativeDriver: canUseNativeDriver,
         }),
       ]).start();
 
@@ -130,8 +134,11 @@ const Toast: React.FC<ToastProps> = ({
 
   return (
     <View
-      style={[styles.container, getPositionStyle()]}
-      pointerEvents="box-none"
+      style={[
+        styles.container,
+        getPositionStyle(),
+        { pointerEvents: 'box-none' },
+      ]}
     >
       <Animated.View
         style={[

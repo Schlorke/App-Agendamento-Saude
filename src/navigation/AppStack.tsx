@@ -95,9 +95,11 @@ const TabNavigator = () => {
  *   - `Profile`: Tela de perfil do usuário.
  *
  * @stack_screens
+ *   - `MainTabs`: Tab Navigator principal contendo Home, Schedule, History e Profile.
  *   - `News`: Tela de notícias e campanhas de saúde.
  *   - `Pharmacies`: Tela de farmácias de plantão.
  *   - `Medications`: Tela de informações sobre medicamentos.
+ *   - `EditProfile`: Tela de edição de perfil do usuário.
  *
  * @configuration
  *   - Header habilitado com estilo verde primário.
@@ -110,6 +112,7 @@ const TabNavigator = () => {
  * @changelog
  *   - 2024-01-15 - IA - Adicionado bloco de documentação JSDoc completo.
  *   - 2024-01-15 - IA - Convertido para Stack Navigator contendo Tab Navigator e novas rotas.
+ *   - 2025-12-06 - IA - Renomeada tela do Stack Navigator de "Home" para "MainTabs" para evitar conflito de nomes com a tela "Home" do Tab Navigator interno.
  */
 const AppStack = () => {
   return (
@@ -126,9 +129,9 @@ const AppStack = () => {
       }}
     >
       <Stack.Screen
-        name="Home"
+        name="MainTabs"
         component={TabNavigator}
-        options={{ headerShown: false }}
+        options={{ headerShown: false, title: 'Início' }}
       />
       <Stack.Screen
         name="News"

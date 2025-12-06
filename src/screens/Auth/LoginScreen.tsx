@@ -87,7 +87,9 @@ const LoginScreen: React.FC<AuthScreenProps<'Login'>> = ({ navigation }) => {
     setLoading(true);
 
     try {
-      const resultado = await viewModel.login(cpf, senha);
+      // Limpa o CPF antes de enviar ao ViewModel
+      const cpfLimpo = cpf.replace(/\D/g, '');
+      const resultado = await viewModel.login(cpfLimpo, senha);
 
       if (resultado.success && resultado.usuario) {
         // Faz login usando o hook de autenticação
@@ -121,11 +123,14 @@ const LoginScreen: React.FC<AuthScreenProps<'Login'>> = ({ navigation }) => {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      enabled={Platform.OS !== 'web'}
     >
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={true}
+        nestedScrollEnabled={true}
       >
         <View style={styles.content}>
           <Text style={styles.title}>Bem-vindo</Text>
@@ -186,12 +191,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
+    ...(Platform.OS === 'web' && {
+      height: '100vh' as unknown as number,
+    }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any,
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
     padding: theme.spacing.lg,
-  },
+    ...(Platform.OS === 'web' && {
+      minHeight: '100vh' as unknown as number,
+    }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any,
   content: {
     width: '100%',
     maxWidth: 400,

@@ -12,6 +12,7 @@ export type AuthStackParamList = {
  * Tipos de navegação para a stack principal do app
  */
 export type AppStackParamList = {
+  MainTabs: undefined;
   Home: undefined;
   Schedule: undefined;
   History: undefined;

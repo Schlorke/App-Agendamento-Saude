@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform, StyleSheet } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import type { AuthStackParamList } from './types';
 
@@ -35,6 +36,9 @@ const AuthStack = () => {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
+        ...(Platform.OS === 'web' && {
+          cardStyle: styles.webCardStyle,
+        }),
       }}
     >
       <Stack.Screen name="Login" component={LoginScreen} />
@@ -42,5 +46,13 @@ const AuthStack = () => {
     </Stack.Navigator>
   );
 };
+
+const styles = StyleSheet.create({
+  webCardStyle: {
+    flex: 1,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    height: '100vh' as unknown as any,
+  },
+});
 
 export default AuthStack;

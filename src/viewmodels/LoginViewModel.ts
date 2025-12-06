@@ -35,7 +35,7 @@ class LoginViewModel {
 
   /**
    * Faz login do usuário
-   * @param cpf - CPF do usuário
+   * @param cpf - CPF do usuário (aceita formatado ou não formatado)
    * @param senha - Senha do usuário
    * @returns Resultado do login
    */
@@ -44,8 +44,11 @@ class LoginViewModel {
       this._loading = true;
       this._error = null;
 
+      // Limpa o CPF removendo formatação para garantir consistência
+      const cpfLimpo = cpf.replace(/\D/g, '');
+
       // Validação de CPF
-      if (!validateCPF(cpf)) {
+      if (!validateCPF(cpfLimpo)) {
         return {
           success: false,
           error: 'CPF inválido',
@@ -60,10 +63,16 @@ class LoginViewModel {
         };
       }
 
-      // Busca usuário no banco
-      const usuario = await dataService.buscarUsuarioPorCPF(cpf);
+      // Busca usuário no banco usando CPF limpo
+      const usuario = await dataService.buscarUsuarioPorCPF(cpfLimpo);
 
       if (!usuario) {
+        if (__DEV__) {
+          console.log(
+            '❌ Login falhou: Usuário não encontrado para CPF:',
+            cpfLimpo
+          );
+        }
         return {
           success: false,
           error: 'CPF ou senha incorretos',
@@ -71,7 +80,20 @@ class LoginViewModel {
       }
 
       // Verifica senha
-      if (!compareHash(senha, usuario.senhaHash)) {
+      const senhaCorreta = compareHash(senha, usuario.senhaHash);
+      if (__DEV__) {
+        console.log('🔍 Debug Login:', {
+          cpf: cpfLimpo,
+          usuarioEncontrado: !!usuario,
+          senhaHashNoBanco: usuario.senhaHash,
+          senhaCorreta,
+        });
+      }
+
+      if (!senhaCorreta) {
+        if (__DEV__) {
+          console.log('❌ Login falhou: Senha incorreta');
+        }
         return {
           success: false,
           error: 'CPF ou senha incorretos',

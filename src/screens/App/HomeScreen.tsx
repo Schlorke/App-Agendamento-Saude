@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Animated } from 'react-native';
+import {
+  Calendar,
+  ClipboardList,
+  Megaphone,
+  Pill,
+  Syringe,
+  UserCircle,
+} from 'lucide-react-native';
 import { useAuth } from '../../hooks/useAuth';
 import { theme } from '../../styles/theme';
 import Card from '../../components/Card';
@@ -23,6 +31,7 @@ import type { AppScreenProps } from '../../navigation/types';
  *   - 2024-01-15 - IA - Adicionado bloco de documentação JSDoc completo.
  *   - 2025-12-06 - IA - Adicionadas labels e hints de acessibilidade nos itens do menu.
  *   - 2025-12-06 - IA - Melhorada UX com animações de entrada e uso de Card component.
+ *   - 2025-12-06 - IA - Substituídos emojis por ícones Lucide com coloração da identidade visual.
  */
 const HomeScreen: React.FC<AppScreenProps<'Home'>> = ({ navigation }) => {
   const { usuario } = useAuth();
@@ -34,7 +43,8 @@ const HomeScreen: React.FC<AppScreenProps<'Home'>> = ({ navigation }) => {
   const menuItems = useMemo(
     () => [
       {
-        icon: '📅',
+        Icon: Calendar,
+        iconColor: theme.colors.primary,
         title: 'Agendar Consulta',
         description: 'Agende sua consulta médica',
         route: 'Schedule' as const,
@@ -43,7 +53,8 @@ const HomeScreen: React.FC<AppScreenProps<'Home'>> = ({ navigation }) => {
           'Abre a tela para escolher especialidade, profissional e horário',
       },
       {
-        icon: '📋',
+        Icon: ClipboardList,
+        iconColor: theme.colors.warning,
         title: 'Histórico',
         description: 'Veja suas consultas agendadas e passadas',
         route: 'History' as const,
@@ -52,7 +63,8 @@ const HomeScreen: React.FC<AppScreenProps<'Home'>> = ({ navigation }) => {
           'Abre a tela com consultas agendadas, realizadas e canceladas',
       },
       {
-        icon: '📰',
+        Icon: Megaphone,
+        iconColor: theme.colors.primary,
         title: 'Notícias e Campanhas',
         description: 'Fique por dentro das campanhas de saúde',
         route: 'News' as const,
@@ -60,7 +72,8 @@ const HomeScreen: React.FC<AppScreenProps<'Home'>> = ({ navigation }) => {
         accessibilityHint: 'Lista campanhas e notícias disponíveis',
       },
       {
-        icon: '💊',
+        Icon: Pill,
+        iconColor: theme.colors.error,
         title: 'Farmácias de Plantão',
         description: 'Encontre farmácias abertas 24 horas',
         route: 'Pharmacies' as const,
@@ -68,7 +81,8 @@ const HomeScreen: React.FC<AppScreenProps<'Home'>> = ({ navigation }) => {
         accessibilityHint: 'Mostra farmácias abertas e contatos',
       },
       {
-        icon: '💉',
+        Icon: Syringe,
+        iconColor: theme.colors.secondary,
         title: 'Medicamentos',
         description: 'Informações sobre medicamentos disponíveis',
         route: 'Medications' as const,
@@ -76,7 +90,8 @@ const HomeScreen: React.FC<AppScreenProps<'Home'>> = ({ navigation }) => {
         accessibilityHint: 'Exibe lista de medicamentos e dosagens',
       },
       {
-        icon: '👤',
+        Icon: UserCircle,
+        iconColor: theme.colors.primary,
         title: 'Perfil',
         description: 'Visualize e edite seus dados',
         route: 'Profile' as const,
@@ -147,9 +162,10 @@ const HomeScreen: React.FC<AppScreenProps<'Home'>> = ({ navigation }) => {
                 accessibilityLabel={item.accessibilityLabel}
                 accessibilityHint={item.accessibilityHint}
               >
-                <Text style={styles.menuItemTitle}>
-                  {item.icon} {item.title}
-                </Text>
+                <View style={styles.menuItemHeader}>
+                  <item.Icon size={24} color={item.iconColor} strokeWidth={2} />
+                  <Text style={styles.menuItemTitle}>{item.title}</Text>
+                </View>
                 <Text style={styles.menuItemDescription}>
                   {item.description}
                 </Text>
@@ -192,10 +208,16 @@ const styles = StyleSheet.create({
   menuItem: {
     marginBottom: 0,
   },
+  menuItemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.xs,
+    gap: theme.spacing.sm,
+  },
   menuItemTitle: {
     ...theme.typography.h3,
     color: theme.colors.text,
-    marginBottom: theme.spacing.xs,
+    flex: 1,
   },
   menuItemDescription: {
     ...theme.typography.bodySmall,

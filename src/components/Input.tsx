@@ -36,6 +36,8 @@ export interface InputProps extends TextInputProps {
  * @changelog
  *   - 2024-01-15 - IA - Adicionado bloco de documentação JSDoc completo.
  *   - 2025-12-06 - IA - Adicionada animação de foco com transição suave da cor da borda.
+ *   - 2025-12-06 - IA - Corrigido alinhamento vertical do placeholder e texto, com suporte para campos multiline.
+ *   - 2025-12-06 - IA - Corrigido erro "Unexpected text node" no React Native Web substituindo renderização condicional com `&&` por operadores ternários com `null`.
  */
 const Input: React.FC<InputProps> = ({
   label,
@@ -81,25 +83,29 @@ const Input: React.FC<InputProps> = ({
 
   return (
     <View style={[styles.container, containerStyle]}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label ? <Text style={styles.label}>{label}</Text> : null}
       <Animated.View
         style={[
           styles.inputContainer,
           {
             borderColor,
           },
-          error && styles.inputErrorContainer,
+          error ? styles.inputErrorContainer : null,
         ]}
       >
         <TextInput
-          style={[styles.input, style]}
+          style={[
+            styles.input,
+            props.multiline ? styles.inputMultiline : null,
+            style,
+          ]}
           placeholderTextColor={theme.colors.textSecondary}
           onFocus={handleFocus}
           onBlur={handleBlur}
           {...props}
         />
       </Animated.View>
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>
   );
 };
@@ -126,8 +132,16 @@ const styles = StyleSheet.create({
     ...theme.typography.body,
     height: 50,
     paddingHorizontal: theme.spacing.md,
+    paddingVertical: 0,
     backgroundColor: 'transparent',
     color: theme.colors.text,
+    textAlignVertical: 'center',
+  },
+  inputMultiline: {
+    height: 80,
+    paddingTop: theme.spacing.sm,
+    paddingBottom: theme.spacing.sm,
+    textAlignVertical: 'top',
   },
   errorText: {
     ...theme.typography.caption,

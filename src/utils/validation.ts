@@ -102,12 +102,26 @@ export const validateDataNascimento = (
     };
   }
 
-  const data = new Date(dataNascimento);
+  // Valida se a data é válida (ex: não permite 31/02)
+  const [ano, mes, dia] = dataNascimento.split('-').map(Number);
+  const data = new Date(ano, mes - 1, dia);
+
+  if (
+    data.getFullYear() !== ano ||
+    data.getMonth() !== mes - 1 ||
+    data.getDate() !== dia
+  ) {
+    return {
+      isValid: false,
+      error: 'Data de nascimento inválida',
+    };
+  }
+
   const hoje = new Date();
   const idade = hoje.getFullYear() - data.getFullYear();
-  const mes = hoje.getMonth() - data.getMonth();
+  const mesAtual = hoje.getMonth() - data.getMonth();
 
-  if (mes < 0 || (mes === 0 && hoje.getDate() < data.getDate())) {
+  if (mesAtual < 0 || (mesAtual === 0 && hoje.getDate() < data.getDate())) {
     // Ainda não fez aniversário este ano
     if (idade - 1 < 0) {
       return {
