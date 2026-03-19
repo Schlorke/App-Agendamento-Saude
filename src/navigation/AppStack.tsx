@@ -17,7 +17,6 @@ import NewsScreen from '../screens/App/NewsScreen';
 import PharmaciesScreen from '../screens/App/PharmaciesScreen';
 import MedicationsScreen from '../screens/App/MedicationsScreen';
 // EditProfileScreen is used in Stack.Screen component prop (line 148)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import EditProfileScreen from '../screens/App/EditProfileScreen';
 
 const Tab = createBottomTabNavigator<AppStackParamList>();
@@ -41,7 +40,7 @@ const TabBarButton = (props: BottomTabBarButtonProps) => {
   const { style, onPress, children, ...restProps } = props;
 
   return (
-    // @ts-expect-error - Pressable ref type incompatibility with BottomTabBarButtonProps
+    // @ts-expect-error - incompatibilidade conhecida de ref entre BottomTabBarButtonProps e Pressable
     <Pressable
       {...restProps}
       onPress={onPress}

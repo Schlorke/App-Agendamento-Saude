@@ -149,8 +149,10 @@ class StorageService {
           'Erro crítico ao salvar sessão (fallback falhou):',
           fallbackError
         );
-        // Apenas em último caso lança o erro
-        throw new Error('Não foi possível salvar a sessão do usuário');
+        // Apenas em último caso lança o erro (cause para preserve-caught-error)
+        throw new Error('Não foi possível salvar a sessão do usuário', {
+          cause: fallbackError,
+        });
       }
     }
   }

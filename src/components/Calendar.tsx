@@ -198,9 +198,13 @@ const Calendar: React.FC<CalendarProps> = ({
         >
           <ChevronLeft
             size={20}
-            color={
-              canGoPrevious() ? theme.colors.primary : theme.colors.disabled
-            }
+            {...({
+              style: {
+                stroke: canGoPrevious()
+                  ? theme.colors.primary
+                  : theme.colors.disabled,
+              },
+            } as unknown as Record<string, unknown>)}
           />
         </TouchableOpacity>
 
@@ -228,7 +232,13 @@ const Calendar: React.FC<CalendarProps> = ({
         >
           <ChevronRight
             size={20}
-            color={canGoNext() ? theme.colors.primary : theme.colors.disabled}
+            {...({
+              style: {
+                stroke: canGoNext()
+                  ? theme.colors.primary
+                  : theme.colors.disabled,
+              },
+            } as unknown as Record<string, unknown>)}
           />
         </TouchableOpacity>
       </View>

@@ -7,8 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (Histórico anterior)
+
+- **Tooling de formatação/lint**: Ajustada a estratégia de Prettier + ESLint para evitar conflitos de regras. O script `format` agora formata apenas código (`js/jsx/ts/tsx/json`), `format:md` formata apenas arquivos Markdown e foi adicionado `format:all` para executar ambos em sequência. Também foi removido o uso de `eslint-plugin-prettier`, mantendo integração via `eslint-config-prettier`.
+
 ### Fixed
 
+- **tsconfig.json**: Removido `extends` do Expo e declaradas explicitamente as opções de compilação para evitar conflito de validação da IDE na opção `--module`, mantendo typecheck do projeto sem erros.
+- **.vscode/settings.json**: Forçada a IDE a usar o TypeScript local do projeto (`node_modules/typescript/lib`) para evitar diagnóstico incorreto/stale no `tsconfig.json` sobre a opção `--module`.
+- **tsconfig.json**: Definido explicitamente `compilerOptions.module` como `es2022` para sobrescrever valor herdado inválido e eliminar o erro de TypeScript sobre a opção `--module`.
 - **CancelAppointmentViewModel.ts**: Reativada validação de 24 horas de antecedência para cancelamento de consultas. A validação estava comentada e agora está funcionando corretamente, bloqueando cancelamentos com menos de 24 horas de antecedência.
 - **dataService.ts**: Reativada validação de 24 horas de antecedência no método `cancelarConsulta`. Corrigida construção da data da consulta para usar timezone local de forma consistente, evitando problemas com diferenças entre UTC e horário local.
 - **dataService.test.ts**: Corrigido teste de validação de 24 horas para usar data e hora locais de forma consistente. O teste agora usa `formatData()` para formatar a data local ao invés de `toISOString().split('T')[0]` que retornava data em UTC, causando inconsistência com o horário local.

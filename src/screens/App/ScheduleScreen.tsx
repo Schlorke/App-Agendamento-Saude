@@ -303,7 +303,12 @@ const ScheduleScreen: React.FC<AppScreenProps<'Schedule'>> = ({
                   accessibilityRole="button"
                   accessibilityLabel="Fechar"
                 >
-                  <X size={24} color={theme.colors.text} />
+                  <X
+                    size={24}
+                    {...({
+                      style: { stroke: theme.colors.text },
+                    } as unknown as Record<string, unknown>)}
+                  />
                 </TouchableOpacity>
               </View>
               <ScrollView
@@ -369,7 +374,12 @@ const ScheduleScreen: React.FC<AppScreenProps<'Schedule'>> = ({
                   accessibilityRole="button"
                   accessibilityLabel="Fechar"
                 >
-                  <X size={24} color={theme.colors.text} />
+                  <X
+                    size={24}
+                    {...({
+                      style: { stroke: theme.colors.text },
+                    } as unknown as Record<string, unknown>)}
+                  />
                 </TouchableOpacity>
               </View>
               <ScrollView
@@ -436,7 +446,12 @@ const ScheduleScreen: React.FC<AppScreenProps<'Schedule'>> = ({
                   accessibilityRole="button"
                   accessibilityLabel="Fechar"
                 >
-                  <X size={24} color={theme.colors.text} />
+                  <X
+                    size={24}
+                    {...({
+                      style: { stroke: theme.colors.text },
+                    } as unknown as Record<string, unknown>)}
+                  />
                 </TouchableOpacity>
               </View>
               <ScrollView
@@ -470,7 +485,12 @@ const ScheduleScreen: React.FC<AppScreenProps<'Schedule'>> = ({
                       accessibilityLabel={`Selecionar horário ${item}`}
                     >
                       <View style={styles.horarioOption}>
-                        <Clock size={18} color={theme.colors.primary} />
+                        <Clock
+                          size={18}
+                          {...({
+                            style: { stroke: theme.colors.primary },
+                          } as unknown as Record<string, unknown>)}
+                        />
                         <Text
                           style={[
                             styles.pickerOptionText,
@@ -526,11 +546,13 @@ const ScheduleScreen: React.FC<AppScreenProps<'Schedule'>> = ({
             </Text>
             <ChevronDown
               size={20}
-              color={
-                especialidadeSelecionada
-                  ? theme.colors.text
-                  : theme.colors.textSecondary
-              }
+              {...({
+                style: {
+                  stroke: especialidadeSelecionada
+                    ? theme.colors.text
+                    : theme.colors.textSecondary,
+                },
+              } as unknown as Record<string, unknown>)}
             />
           </TouchableOpacity>
         </Card>
@@ -562,11 +584,13 @@ const ScheduleScreen: React.FC<AppScreenProps<'Schedule'>> = ({
                   </Text>
                   <ChevronDown
                     size={20}
-                    color={
-                      profissionalSelecionado
-                        ? theme.colors.text
-                        : theme.colors.textSecondary
-                    }
+                    {...({
+                      style: {
+                        stroke: profissionalSelecionado
+                          ? theme.colors.text
+                          : theme.colors.textSecondary,
+                      },
+                    } as unknown as Record<string, unknown>)}
                   />
                 </>
               )}
@@ -588,11 +612,13 @@ const ScheduleScreen: React.FC<AppScreenProps<'Schedule'>> = ({
               <View style={styles.dateButtonContent}>
                 <Calendar
                   size={20}
-                  color={
-                    dataSelecionada
-                      ? theme.colors.primary
-                      : theme.colors.textSecondary
-                  }
+                  {...({
+                    style: {
+                      stroke: dataSelecionada
+                        ? theme.colors.primary
+                        : theme.colors.textSecondary,
+                    },
+                  } as unknown as Record<string, unknown>)}
                 />
                 <Text
                   style={[
@@ -620,11 +646,13 @@ const ScheduleScreen: React.FC<AppScreenProps<'Schedule'>> = ({
               <View style={styles.dateButtonContent}>
                 <Clock
                   size={20}
-                  color={
-                    horarioSelecionado
-                      ? theme.colors.primary
-                      : theme.colors.textSecondary
-                  }
+                  {...({
+                    style: {
+                      stroke: horarioSelecionado
+                        ? theme.colors.primary
+                        : theme.colors.textSecondary,
+                    },
+                  } as unknown as Record<string, unknown>)}
                 />
                 <Text
                   style={[
@@ -636,11 +664,13 @@ const ScheduleScreen: React.FC<AppScreenProps<'Schedule'>> = ({
                 </Text>
                 <ChevronDown
                   size={20}
-                  color={
-                    horarioSelecionado
-                      ? theme.colors.text
-                      : theme.colors.textSecondary
-                  }
+                  {...({
+                    style: {
+                      stroke: horarioSelecionado
+                        ? theme.colors.text
+                        : theme.colors.textSecondary,
+                    },
+                  } as unknown as Record<string, unknown>)}
                 />
               </View>
             </TouchableOpacity>
@@ -700,7 +730,12 @@ const ScheduleScreen: React.FC<AppScreenProps<'Schedule'>> = ({
                       accessibilityRole="button"
                       accessibilityLabel="Fechar calendário"
                     >
-                      <X size={24} color={theme.colors.text} />
+                      <X
+                        size={24}
+                        {...({
+                          style: { stroke: theme.colors.text },
+                        } as unknown as Record<string, unknown>)}
+                      />
                     </TouchableOpacity>
                   </View>
                   <CalendarComponent

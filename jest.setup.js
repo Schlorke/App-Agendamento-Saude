@@ -1,11 +1,9 @@
-import '@testing-library/jest-native/extend-expect';
+// Matchers como toBeVisible, toHaveTextContent vêm built-in no @testing-library/react-native 13+
 import 'react-native-gesture-handler/jestSetup';
 import { jest } from '@jest/globals';
 
-// Mock AsyncStorage
-jest.mock('@react-native-async-storage/async-storage', () =>
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
-);
+// Mock AsyncStorage (v3 não inclui jest/async-storage-mock — usa __mocks__)
+jest.mock('@react-native-async-storage/async-storage');
 
 // Mock Expo Notifications - Completo com todos os métodos necessários
 jest.mock('expo-notifications', () => ({

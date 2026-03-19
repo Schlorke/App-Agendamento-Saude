@@ -13,6 +13,10 @@ module.exports = {
     '!src/**/*.stories.{ts,tsx}',
   ],
   moduleNameMapper: {
+    ...(jestPreset.moduleNameMapper || {}),
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^expo$': '<rootDir>/__mocks__/expo.js',
+    '^expo/src/winter$': '<rootDir>/__mocks__/expo-winter.js',
+    '^expo/src/winter/(.*)$': '<rootDir>/__mocks__/expo-winter.js',
   },
 };

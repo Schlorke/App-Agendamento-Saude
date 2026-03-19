@@ -163,7 +163,12 @@ const HomeScreen: React.FC<AppScreenProps<'Home'>> = ({ navigation }) => {
                 accessibilityHint={item.accessibilityHint}
               >
                 <View style={styles.menuItemHeader}>
-                  <item.Icon size={24} color={item.iconColor} strokeWidth={2} />
+                  <item.Icon
+                    size={24}
+                    {...({
+                      style: { stroke: item.iconColor, strokeWidth: 2 },
+                    } as unknown as Record<string, unknown>)}
+                  />
                   <Text style={styles.menuItemTitle}>{item.title}</Text>
                 </View>
                 <Text style={styles.menuItemDescription}>
