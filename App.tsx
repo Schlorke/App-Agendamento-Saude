@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 import Navigation from './src/navigation';
+import PwaInstallBanner from './src/components/PwaInstallBanner';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/hooks/useAuth';
 import dataService from './src/services/dataService';
@@ -30,6 +31,7 @@ type NotificationSubscription = {
  *   - 2024-01-15 - IA - Adicionada configuracao de handlers de notificacoes e solicitacao de permissoes.
  *   - 2025-12-06 - IA - Envolvido em AuthProvider para compartilhar sessao global em Web e Expo.
  *   - 2025-12-06 - IA - Implementada importacao condicional de expo-notifications para evitar warnings na web.
+ *   - 2026-04-23 - IA - Banner PWA (web móvel) montado acima da navegação para instalação / instruções iOS.
  */
 export default function App() {
   const notificationListener = useRef<NotificationSubscription | undefined>(
@@ -161,9 +163,14 @@ export default function App() {
   }, []);
 
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider style={{ flex: 1 }}>
       <AuthProvider>
-        <Navigation />
+        <View style={{ flex: 1 }}>
+          <PwaInstallBanner />
+          <View style={{ flex: 1, minHeight: 0 }}>
+            <Navigation />
+          </View>
+        </View>
       </AuthProvider>
       <StatusBar style="auto" />
     </SafeAreaProvider>

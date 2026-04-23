@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **ESLint**: Globais `globalThis`, `navigator`, `Navigator`, `sessionStorage`, `Event` no `eslint.config.js`; `PwaInstallBannerViewModel` usa `globalThis` para APIs de browser; efeito do `PwaInstallBanner` adia `setVisible` com `Promise.resolve().then` + flag `cancelled` para cumprir `react-hooks/set-state-in-effect`.
+
+### Added
+
+- **PWA (web)**: `public/manifest.json`, meta tags Apple e link para manifest em `public/index.html`; campos `web` (nome curto, `themeColor`, etc.) em `app.config.js`; ícones `public/pwa-192.png` e `public/pwa-512.png` para instalação. Componente `PwaInstallBanner` com `PwaInstallBannerViewModel` — no Android (Chrome) usa `beforeinstallprompt` quando disponível; no iOS mostra instruções para «Adicionar ao ecrã principal». Banner montado em `App.tsx` acima da navegação.
+- **PwaInstallBanner.tsx**: No iOS, passo a passo com réplica da barra inferior do Safari (voltar, Partilhar com `lucide-react-native`/`Share` destacado, ícone de separadores), linha exemplo «Adicionar ao ecrã principal» com «+», e `accessibilityLabel` com o guia completo para leitores de ecrã.
+- **PwaInstallBanner.tsx**: Ajuste de alinhamento — barra Safari em três zonas com Partilhar centrado, linha «Adicionar ao ecrã principal» com conteúdo centrado na largura, botão Fechar a largura total no iOS (e par Instalar/Fechar equilibrado no Android).
+- **PwaInstallBanner.tsx**: Bloquinhos de referência (barra Safari + linha da folha) mais pequenos — ícones, padding e `maxWidth` moderados para não dominarem o banner.
+- **PwaInstallBanner.tsx**: Ícone `Plus` (Lucide) no quadrado azul do passo 2 em vez de texto, para centralização visual consistente (web/native).
+
 ### Changed (Histórico anterior)
 
 - **Tooling de formatação/lint**: Ajustada a estratégia de Prettier + ESLint para evitar conflitos de regras. O script `format` agora formata apenas código (`js/jsx/ts/tsx/json`), `format:md` formata apenas arquivos Markdown e foi adicionado `format:all` para executar ambos em sequência. Também foi removido o uso de `eslint-plugin-prettier`, mantendo integração via `eslint-config-prettier`.

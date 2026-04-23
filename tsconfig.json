@@ -3,16 +3,11 @@
     "allowJs": true,
     "esModuleInterop": true,
     "jsx": "react-native",
-    "lib": [
-      "dom",
-      "esnext"
-    ],
+    "lib": ["dom", "esnext"],
     "module": "es2022",
     "moduleDetection": "force",
     "moduleResolution": "bundler",
-    "customConditions": [
-      "react-native"
-    ],
+    "customConditions": ["react-native"],
     "noEmit": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
